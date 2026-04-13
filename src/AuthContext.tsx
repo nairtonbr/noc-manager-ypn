@@ -27,8 +27,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         try {
           const { doc, getDoc } = await import('firebase/firestore');
           const { db } = await import('./firebase');
-          const userDoc = await getDoc(doc(db, 'users', user.uid));
-          if (userDoc.exists()) {
+          
+          const userDocRef = doc(db, 'users', user.uid);
+          let userDoc;
+          
+          try {
+            userDoc = await getDoc(userDocRef);
+          } catch (permError) {
+            console.warn("Initial permission error, attempting to check email for default admin:", permError);
+          }
+
+          if (userDoc?.exists()) {
             setRole(userDoc.data().role || 'pending');
           } else {
             // Default admin for the main user
@@ -36,17 +45,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             const newRole = isDefaultAdmin ? 'admin' : 'pending';
             setRole(newRole);
             
-            // Create the user doc
-            const { setDoc } = await import('firebase/firestore');
-            await setDoc(doc(db, 'users', user.uid), {
-              email: user.email,
-              displayName: user.displayName,
-              role: newRole,
-              createdAt: new Date().toISOString()
-            });
+            // Create the user doc if it doesn't exist
+            try {
+              const { setDoc } = await import('firebase/firestore');
+              await setDoc(userDocRef, {
+                email: user.email,
+                displayName: user.displayName,
+                role: newRole,
+                createdAt: new Date().toISOString()
+              });
+            } catch (createError) {
+              console.error("Critical error creating user profile:", createError);
+            }
           }
         } catch (error) {
-          console.error("Error fetching role:", error);
+          console.error("Error in auth state transition:", error);
           setRole('pending');
         }
       } else {
