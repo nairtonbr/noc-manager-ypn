@@ -261,22 +261,22 @@ function Dashboard() {
         {/* Main Tabs */}
         <Tabs defaultValue="assets" className="space-y-6" onValueChange={setActiveTab}>
           <TabsList className="bg-white/5 border border-white/10 p-1 rounded-full h-12 w-full justify-start overflow-x-auto">
-            <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Ativos e Acessos
             </TabsTrigger>
-            <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Tickets NOC
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Tarefas
             </TabsTrigger>
-            <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Datacenters / POPs
             </TabsTrigger>
-            <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Estoque
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:text-white">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
               Configurações
             </TabsTrigger>
           </TabsList>
@@ -1022,10 +1022,10 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
                         <p className="text-[10px] text-[#00ff88] font-bold uppercase">{ticket.client}</p>
                         <h4 className="font-bold text-sm text-gray-100">{ticket.title}</h4>
                       </div>
-                      <Badge className={`${ticket.priority === 'Crítica' ? 'bg-red-500' : 'bg-white/10'} text-[9px]`}>{ticket.priority}</Badge>
+                      <Badge className={`${ticket.priority === 'Crítica' ? 'bg-red-500 animate-pulse-subtle' : 'bg-white/10'} text-[9px]`}>{ticket.priority}</Badge>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline" className="text-[8px] border-white/10 text-gray-500 uppercase">{ticket.category}</Badge>
+                      <Badge variant="outline" className={`text-[8px] border-white/10 text-gray-500 uppercase ${ticket.status === 'Em andamento' ? 'animate-pulse-subtle border-blue-500/50 text-blue-400' : ''}`}>{ticket.category}</Badge>
                     </div>
                     <div className="flex items-center justify-between pt-2 border-t border-white/5">
                       <div className="flex items-center gap-1.5 text-[10px] text-gray-500">
@@ -1238,7 +1238,7 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold">Tarefas Operacionais</h2>
+          <h2 className="text-2xl font-bold text-[#00ff88]">Tarefas Operacionais</h2>
           <p className="text-gray-500 text-sm">Gestão de atividades e manutenções</p>
         </div>
         {isAdmin && (
@@ -1317,7 +1317,7 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
                 </div>
               </div>
               <div>
-                <h4 className="font-bold text-lg mb-1">{task.title}</h4>
+                <h4 className="font-bold text-lg mb-1 text-[#00ff88]">{task.title}</h4>
                 <p className="text-sm text-gray-500 line-clamp-3">{task.description}</p>
               </div>
               <div className="space-y-3 pt-4 border-t border-white/5">
