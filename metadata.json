@@ -1,0 +1,5 @@
+{
+  "name": "NOC Manager",
+  "description": "Sistema de gestão para equipes de NOC/TI, incluindo documentação de ativos, tickets e inventário.",
+  "requestFramePermissions": []
+}

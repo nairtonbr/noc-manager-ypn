@@ -1,0 +1,151 @@
+{
+  "entities": {
+    "Asset": {
+      "title": "Asset",
+      "description": "Network assets, servers, and web applications",
+      "type": "object",
+      "properties": {
+        "category": { "type": "string", "enum": ["Servers", "Web Applications", "Network Assets", "Network Topology", "Upstream/Downstream", "Clientes B2B"] },
+        "name": { "type": "string" },
+        "type": { "type": "string" },
+        "manufacturer": { "type": "string" },
+        "model": { "type": "string" },
+        "site": { "type": "string" },
+        "status": { "type": "string", "enum": ["Ativo", "Inativo", "Manutenção", "Device Disabled"] },
+        "ipv4": { "type": "string" },
+        "ipv6": { "type": "string" },
+        "url": { "type": "string" },
+        "sshPort": { "type": "string" },
+        "sshUser": { "type": "string" },
+        "sshPassword": { "type": "string" },
+        "appPort": { "type": "string" },
+        "appUser": { "type": "string" },
+        "appPassword": { "type": "string" },
+        "snmpCommunity": { "type": "string" },
+        "drawioLink": { "type": "string" },
+        "attachmentUrl": { "type": "string" },
+        "circuitId": { "type": "string" },
+        "address": { "type": "string" },
+        "speed": { "type": "string" },
+        "vlanId": { "type": "string" },
+        "vlanV4": { "type": "string" },
+        "vlanV6": { "type": "string" },
+        "asn": { "type": "string" },
+        "bandaContratada": { "type": "string" },
+        "blocoV4Cidr": { "type": "string" },
+        "blocoV6Cidr": { "type": "string" },
+        "asPatch": { "type": "string" },
+        "communityBh": { "type": "string" },
+        "contatoNoc": { "type": "string" },
+        "popAbordagem": { "type": "string" },
+        "switch": { "type": "string" },
+        "enlaceIpv4": { "type": "string" },
+        "enlaceIpv6": { "type": "string" },
+        "publicIpv4": { "type": "string" },
+        "publicIpv6": { "type": "string" },
+        "pppoeUser": { "type": "string" },
+        "pppoePass": { "type": "string" },
+        "notes": { "type": "string" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["category", "name"]
+    },
+    "Ticket": {
+      "title": "Ticket",
+      "description": "NOC Support Tickets",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "description": { "type": "string" },
+        "status": { "type": "string", "enum": ["Em Aberto", "Em andamento", "Concluído"] },
+        "priority": { "type": "string", "enum": ["Baixa", "Média", "Alta", "Crítica"] },
+        "category": { "type": "string", "enum": ["Engenharia IP", "Infraestrutura", "NOC", "Projetos", "Suporte"] },
+        "client": { "type": "string" },
+        "responsible": { "type": "string" },
+        "openedAt": { "type": "string", "format": "date-time" },
+        "slaDeadline": { "type": "string", "format": "date-time" },
+        "hours": { "type": "number" },
+        "minutes": { "type": "number" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "status", "client", "category"]
+    },
+    "Customer": {
+      "title": "Customer",
+      "description": "NOC Customers",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "address": { "type": "string" },
+        "cpfCnpj": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "Datacenter": {
+      "title": "Datacenter",
+      "description": "Datacenters and POPs",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "location": { "type": "string" },
+        "type": { "type": "string", "enum": ["Próprio", "Alugado"] },
+        "address": { "type": "string" },
+        "coordinates": { "type": "string" },
+        "lastCleaning": { "type": "string", "format": "date-time" },
+        "enelClientId": { "type": "string" },
+        "enelCpfCnpj": { "type": "string" },
+        "enelOwnerName": { "type": "string" },
+        "enelOwnerCpf": { "type": "string" }
+      },
+      "required": ["name"]
+    },
+    "StockItem": {
+      "title": "Stock Item",
+      "description": "NOC Inventory Items",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "quantity": { "type": "number" },
+        "category": { "type": "string" },
+        "minQuantity": { "type": "number" }
+      },
+      "required": ["name", "quantity"]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "NOC Team Tasks",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "completed": { "type": "boolean" },
+        "responsible": { "type": "string" },
+        "deadline": { "type": "string", "format": "date-time" },
+        "phone": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "completed"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "Application settings and integrations",
+      "type": "object",
+      "properties": {
+        "evolutionWebUrl": { "type": "string" },
+        "evolutionWebApiKey": { "type": "string" },
+        "evolutionWebInstance": { "type": "string" },
+        "triggerTasks": { "type": "boolean" },
+        "triggerTickets": { "type": "boolean" }
+      }
+    }
+  },
+  "firestore": {
+    "/assets/{assetId}": { "schema": "Asset", "description": "Assets collection" },
+    "/tickets/{ticketId}": { "schema": "Ticket", "description": "Tickets collection" },
+    "/datacenters/{dcId}": { "schema": "Datacenter", "description": "Datacenters collection" },
+    "/stock/{itemId}": { "schema": "StockItem", "description": "Inventory collection" },
+    "/tasks/{taskId}": { "schema": "Task", "description": "Tasks collection" },
+    "/settings/{settingId}": { "schema": "Settings", "description": "Settings collection" },
+    "/customers/{customerId}": { "schema": "Customer", "description": "Customers collection" }
+  }
+}

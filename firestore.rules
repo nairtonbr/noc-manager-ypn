@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    // Collection: assets
+    // Fields: category, name, type, manufacturer, model, site, status, ipv4, ipv6, url, sshPort, sshUser, sshPassword, appPort, appUser, appPassword, snmpCommunity, drawioLink, attachmentUrl, circuitId, address, speed, vlanId, publicIpv4, publicIpv6, pppoeUser, pppoePass, notes, updatedAt
+    
+    // Collection: tickets
+    // Fields: title, description, status, priority, category, client, responsible, openedAt, slaDeadline, hours, minutes, createdBy, createdAt
+    
+    // Collection: customers
+    // Fields: name, address, cpfCnpj
+    
+    // Collection: datacenters
+    // Fields: name, location, type, address, coordinates, lastCleaning, enelClientId, enelCpfCnpj, enelOwnerName
+    
+    // Collection: stock
+    // Fields: name, quantity, category, minQuantity
+    
+    // Collection: tasks
+    // Fields: title, completed, responsible, deadline, phone, createdAt
+    
+    // Collection: settings
+    // Fields: evolutionWebUrl, evolutionWebApiKey, evolutionWebInstance, triggerTasks, triggerTickets
+    
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function hasRole() {
+      return isAuthenticated() && 
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'user'];
+    }
+    
+    function isAdmin() {
+      return isAuthenticated() && 
+        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
+         (request.auth.token.email == "NairtonBraga00@gmail.com" && request.auth.token.email_verified == true));
+    }
+
+    function isValidAsset(data) {
+      return data.category in ["Servers", "Web Applications", "Network Assets", "Network Topology", "Upstream/Downstream", "Clientes B2B"] &&
+             data.name is string && data.name.size() > 0 && data.name.size() < 200;
+    }
+
+    function isValidTicket(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.status in ["Em Aberto", "Em andamento", "Concluído"] &&
+             data.category in ["Engenharia IP", "Infraestrutura", "NOC", "Projetos", "Suporte"] &&
+             data.client is string &&
+             (!('priority' in data) || data.priority in ["Baixa", "Média", "Alta", "Crítica"]);
+    }
+
+    function isValidTask(data) {
+      return data.title is string && data.title.size() > 0 &&
+             data.completed is bool &&
+             (!('responsible' in data) || data.responsible is string) &&
+             (!('phone' in data) || data.phone is string) &&
+             (!('deadline' in data) || data.deadline is string);
+    }
+
+    function isValidSettings(data) {
+      return (!('evolutionWebUrl' in data) || data.evolutionWebUrl is string) &&
+             (!('evolutionWebApiKey' in data) || data.evolutionWebApiKey is string) &&
+             (!('evolutionWebInstance' in data) || data.evolutionWebInstance is string) &&
+             (!('triggerTasks' in data) || data.triggerTasks is bool) &&
+             (!('triggerTickets' in data) || data.triggerTickets is bool);
+    }
+
+    match /assets/{assetId} {
+      allow read: if hasRole();
+      allow write: if isAdmin() && isValidAsset(request.resource.data);
+    }
+
+    match /tickets/{ticketId} {
+      allow read: if hasRole();
+      allow write: if isAdmin() && isValidTicket(request.resource.data);
+    }
+
+    match /datacenters/{dcId} {
+      allow read: if hasRole();
+      allow write: if isAdmin();
+    }
+
+    match /stock/{itemId} {
+      allow read: if hasRole();
+      allow write: if isAdmin();
+    }
+
+    match /tasks/{taskId} {
+      allow read: if hasRole();
+      allow write: if isAdmin() && isValidTask(request.resource.data);
+    }
+
+    match /settings/{settingId} {
+      allow read: if hasRole();
+      allow write: if isAdmin() && isValidSettings(request.resource.data);
+    }
+
+    match /customers/{customerId} {
+      allow read: if hasRole();
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if request.auth.uid == userId || isAdmin();
+    }
+  }
+}
