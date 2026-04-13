@@ -7,6 +7,7 @@ interface AuthContextType {
   user: User | null;
   role: 'admin' | 'user' | 'pending' | null;
   loading: boolean;
+  authError: string | null;
   login: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -57,14 +58,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
 
   const login = async () => {
     if (isLoggingIn) return;
     setIsLoggingIn(true);
+    setAuthError(null);
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
-    } catch (error) {
+    } catch (error: any) {
+      if (error.code === 'auth/unauthorized-domain') {
+        const domain = window.location.hostname;
+        setAuthError(`Domínio não autorizado: "${domain}". Adicione este domínio nas configurações de Autenticação do seu Firebase.`);
+      } else {
+        setAuthError(error.message || "Erro ao realizar login.");
+      }
       console.error("Login error:", error);
     } finally {
       setIsLoggingIn(false);
@@ -80,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, role, loading, login, logout }}>
+    <AuthContext.Provider value={{ user, role, loading, authError, login, logout }}>
       {children}
     </AuthContext.Provider>
   );

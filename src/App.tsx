@@ -2018,7 +2018,7 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
 }
 
 function Login() {
-  const { login } = useAuth();
+  const { login, authError } = useAuth();
   return (
     <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center p-4">
       <div className="max-w-md w-full space-y-8 text-center">
@@ -2029,6 +2029,14 @@ function Login() {
           <h1 className="text-4xl font-bold tracking-tighter text-white">NOC Manager</h1>
           <p className="text-gray-500">Sistema de documentação e gestão de ativos de rede.</p>
         </div>
+
+        {authError && (
+          <div className="bg-red-500/10 border border-red-500/20 text-red-500 p-4 rounded-xl text-sm flex items-start gap-3 text-left">
+            <AlertCircle className="w-5 h-5 shrink-0" />
+            <p>{authError}</p>
+          </div>
+        )}
+
         <Button 
           onClick={login}
           className="w-full h-14 bg-white text-black font-bold text-lg rounded-xl hover:bg-gray-200 transition-all flex items-center justify-center gap-3"
