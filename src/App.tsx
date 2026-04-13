@@ -511,6 +511,8 @@ const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin 
 function PropertyRow({ icon, label, value, isLink }: { icon: any, label: string, value: string, isLink?: boolean }) {
   const [copied, setCopied] = useState(false);
 
+  if (!value) return null;
+
   const handleCopy = () => {
     if (!value) return;
     navigator.clipboard.writeText(value);
@@ -673,58 +675,59 @@ function AssetDialog({ isAdmin, asset, trigger }: { isAdmin: boolean, asset?: an
         </Button>
       )} />
       <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col p-0 rounded-2xl shadow-2xl">
-        <DialogHeader className="p-6 border-b border-white/5 bg-[#141414] shrink-0">
-          <DialogTitle className="flex items-center gap-3 text-[#00ff88] text-xl font-bold">
-            <div className="w-8 h-8 bg-[#00ff88]/10 rounded-lg flex items-center justify-center">
-              {asset ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
-            </div>
-            {asset ? 'Editar Registro de Acesso' : 'Novo Registro de Acesso'}
-          </DialogTitle>
-        </DialogHeader>
-        <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
-          <form onSubmit={handleSubmit} className="space-y-10 pb-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="space-y-3">
-                <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Categoria *</Label>
-                <Select value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
-                  <SelectTrigger className="bg-white/5 border-white/10 h-12 focus:ring-[#00ff88]/20 text-base">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                    <SelectItem value="Servers">Servers</SelectItem>
-                    <SelectItem value="Web Applications">Web Applications</SelectItem>
-                    <SelectItem value="Network Assets">Network Assets</SelectItem>
-                    <SelectItem value="Network Topology">Network Topology</SelectItem>
-                    <SelectItem value="Upstream/Downstream">Upstream/Downstream</SelectItem>
-                    <SelectItem value="Clientes B2B">Clientes B2B</SelectItem>
-                  </SelectContent>
-                </Select>
+        <form onSubmit={handleSubmit} className="flex flex-col h-full">
+          <DialogHeader className="p-6 border-b border-white/5 bg-[#141414] shrink-0">
+            <DialogTitle className="flex items-center gap-3 text-[#00ff88] text-xl font-bold">
+              <div className="w-8 h-8 bg-[#00ff88]/10 rounded-lg flex items-center justify-center">
+                {asset ? <Edit2 className="w-5 h-5" /> : <Plus className="w-5 h-5" />}
               </div>
-              <div className="space-y-3">
-                <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Status</Label>
-                <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
-                  <SelectTrigger className="bg-white/5 border-white/10 h-12 focus:ring-[#00ff88]/20 text-base">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                    <SelectItem value="Ativo">Ativo</SelectItem>
-                    <SelectItem value="Inativo">Inativo</SelectItem>
-                    <SelectItem value="Manutenção">Manutenção</SelectItem>
-                    <SelectItem value="Device Disabled">Device Disabled</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div className="space-y-6">
-              <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-3">
-                <Database className="w-4 h-4" /> Informações Básicas
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="space-y-2">
-                  <Label className="text-gray-400">Nome / Identificação *</Label>
-                  <Input required placeholder="Ex: Proxmox 01" className="bg-white/5 border-white/10 h-12" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+              {asset ? 'Editar Registro de Acesso' : 'Novo Registro de Acesso'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+            <div className="space-y-10 pb-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-3">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Categoria *</Label>
+                  <Select required value={formData.category} onValueChange={(v) => setFormData({...formData, category: v})}>
+                    <SelectTrigger className="bg-white/5 border-white/10 h-12 focus:ring-[#00ff88]/20 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                      <SelectItem value="Servers">Servers</SelectItem>
+                      <SelectItem value="Web Applications">Web Applications</SelectItem>
+                      <SelectItem value="Network Assets">Network Assets</SelectItem>
+                      <SelectItem value="Network Topology">Network Topology</SelectItem>
+                      <SelectItem value="Upstream/Downstream">Upstream/Downstream</SelectItem>
+                      <SelectItem value="Clientes B2B">Clientes B2B</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
+                <div className="space-y-3">
+                  <Label className="text-xs font-bold uppercase tracking-widest text-gray-500">Status</Label>
+                  <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
+                    <SelectTrigger className="bg-white/5 border-white/10 h-12 focus:ring-[#00ff88]/20 text-base">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                      <SelectItem value="Ativo">Ativo</SelectItem>
+                      <SelectItem value="Inativo">Inativo</SelectItem>
+                      <SelectItem value="Manutenção">Manutenção</SelectItem>
+                      <SelectItem value="Device Disabled">Device Disabled</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-3">
+                  <Database className="w-4 h-4" /> Informações Básicas
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <div className="space-y-2">
+                    <Label className="text-gray-400">Nome / Identificação *</Label>
+                    <Input required placeholder="Ex: Proxmox 01" className="bg-white/5 border-white/10 h-12" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} />
+                  </div>
                 <div className="space-y-2">
                   <Label className="text-gray-400">Site / POP</Label>
                   <Input placeholder="Ex: POP-SP" className="bg-white/5 border-white/10 h-12" value={formData.site} onChange={(e) => setFormData({...formData, site: e.target.value})} />
@@ -836,12 +839,13 @@ function AssetDialog({ isAdmin, asset, trigger }: { isAdmin: boolean, asset?: an
               <Label className="text-gray-400">Observações</Label>
               <Textarea className="bg-white/5 border-white/10 min-h-[120px] focus:ring-[#00ff88]/20 text-base" value={formData.notes} onChange={(e) => setFormData({...formData, notes: e.target.value})} />
             </div>
-          </form>
+          </div>
         </div>
         <div className="p-8 border-t border-white/5 bg-[#141414] flex justify-end gap-4 shrink-0">
           <Button type="button" variant="ghost" onClick={() => setOpen(false)} className="text-gray-400 hover:text-white hover:bg-white/5 h-12 px-8">Cancelar</Button>
-          <Button type="submit" onClick={() => handleSubmit()} className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-12 h-12 text-base shadow-[0_0_20px_rgba(0,255,136,0.15)]">Salvar Acesso</Button>
+          <Button type="submit" className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-12 h-12 text-base shadow-[0_0_20px_rgba(0,255,136,0.15)]">Salvar Acesso</Button>
         </div>
+        </form>
       </DialogContent>
     </Dialog>
   );
@@ -969,6 +973,19 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
                         {["Baixa", "Média", "Alta", "Crítica"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-400 uppercase text-[10px] font-bold">Responsável *</Label>
+                    <Select required value={formData.responsible} onValueChange={v => setFormData({...formData, responsible: v})}>
+                      <SelectTrigger className="bg-white/5 border-white/10 h-12"><SelectValue placeholder="Selecione o Responsável" /></SelectTrigger>
+                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                        {["Nairton Braga", "Equipe NOC", "Engenharia", "Infraestrutura"].map(resp => <SelectItem key={resp} value={resp}>{resp}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-gray-400 uppercase text-[10px] font-bold">SLA Deadline *</Label>
+                    <Input required type="datetime-local" value={formData.slaDeadline} onChange={e => setFormData({...formData, slaDeadline: e.target.value})} className="bg-white/5 border-white/10 h-12" />
                   </div>
                 </div>
                 <div className="space-y-2">
@@ -1111,12 +1128,10 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
                   </div>
                   <div className="space-y-2">
                     <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Responsável *</Label>
-                    <Select value={formData.responsible} onValueChange={v => setFormData({...formData, responsible: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue placeholder="Selecionar..." /></SelectTrigger>
+                    <Select required value={formData.responsible} onValueChange={v => setFormData({...formData, responsible: v})}>
+                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue placeholder="Selecione o Responsável" /></SelectTrigger>
                       <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        <SelectItem value="Nairton Braga">Nairton Braga</SelectItem>
-                        <SelectItem value="Equipe NOC">Equipe NOC</SelectItem>
-                        <SelectItem value="Engenharia">Engenharia</SelectItem>
+                        {["Nairton Braga", "Equipe NOC", "Engenharia", "Infraestrutura"].map(resp => <SelectItem key={resp} value={resp}>{resp}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>
