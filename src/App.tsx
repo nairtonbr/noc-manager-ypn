@@ -87,7 +87,7 @@ function Dashboard() {
 
   // Real-time listeners
   useEffect(() => {
-    if (!user) return;
+    if (!user || role === 'pending' || role === null) return;
 
     const qAssets = query(collection(db, 'assets'), orderBy('updatedAt', 'desc'));
     const unsubAssets = onSnapshot(qAssets, (snapshot) => {
