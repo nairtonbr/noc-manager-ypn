@@ -192,7 +192,7 @@ function Dashboard() {
     <div className="min-h-screen bg-[#0a0a0a] text-white font-sans selection:bg-[#00ff88]/30">
       {/* Header */}
       <header className="border-b border-white/5 bg-[#0d0d0d]/80 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-[#00ff88] rounded-md flex items-center justify-center">
               <Terminal className="text-black w-5 h-5" />
@@ -212,19 +212,19 @@ function Dashboard() {
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main className="max-w-[95%] mx-auto px-2 sm:px-4 py-4 sm:py-8">
         {/* Company Info Card */}
-        <div className="bg-[#141414] border border-white/5 rounded-2xl p-6 mb-8 flex flex-wrap items-center justify-between gap-6">
-          <div className="flex flex-col lg:flex-row lg:items-center gap-6">
-            <div className="pr-6 border-r border-white/10">
-              <h2 className="text-3xl font-bold text-white mb-1">YPN TECNOLOGIA</h2>
-              <p className="text-xs text-gray-500 uppercase tracking-widest">CNPJ: 16.742.294/0001-67</p>
-              <p className="text-[10px] text-gray-600 mt-1">Rodovia Mendel Steinbruch, 4294 - Pacatuba/CE</p>
+        <div className="bg-[#141414] border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-6 sm:gap-8">
+          <div className="flex flex-col lg:flex-row lg:items-center gap-6 sm:gap-8 flex-1">
+            <div className="pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-white/10 shrink-0 pb-4 lg:pb-0 text-center lg:text-left">
+              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">YPN TECNOLOGIA</h2>
+              <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">CNPJ: 16.742.294/0001-67</p>
+              <p className="text-[9px] sm:text-[10px] text-gray-600 mt-1">Rodovia Mendel Steinbruch, 4294 - Pacatuba/CE</p>
             </div>
-            <div className="flex flex-wrap gap-x-12 gap-y-6">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 sm:gap-x-12 gap-y-6">
               <div className="space-y-3">
                 <p className="text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">YPN Tecnologia</p>
-                <div className="flex gap-8">
+                <div className="flex flex-wrap gap-4 sm:gap-8">
                   <div>
                     <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">ASN</p>
                     <p className="text-xs font-mono text-gray-300">AS273500</p>
@@ -241,7 +241,7 @@ function Dashboard() {
               </div>
               <div className="space-y-3">
                 <p className="text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">Conet Telecom</p>
-                <div className="flex gap-8">
+                <div className="flex flex-wrap gap-4 sm:gap-8">
                   <div>
                     <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">ASN</p>
                     <p className="text-xs font-mono text-gray-300">AS267576</p>
@@ -263,23 +263,23 @@ function Dashboard() {
 
         {/* Main Tabs */}
         <Tabs defaultValue="assets" className="space-y-6" onValueChange={setActiveTab}>
-          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-full h-12 w-full justify-start overflow-x-auto">
-            <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-full h-12 w-full justify-start overflow-x-auto no-scrollbar flex-nowrap">
+            <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Ativos e Acessos
             </TabsTrigger>
-            <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+            <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Tickets NOC
             </TabsTrigger>
-            <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+            <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Tarefas
             </TabsTrigger>
-            <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+            <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Datacenters / POPs
             </TabsTrigger>
-            <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+            <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Estoque
             </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-8 h-full text-sm font-medium hover:bg-white/10 hover:text-white">
+            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
               Configurações
             </TabsTrigger>
           </TabsList>
@@ -290,7 +290,7 @@ function Dashboard() {
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-[#00ff88] transition-colors" />
               <Input 
                 placeholder="Buscar acessos por nome, tipo, fabricante ou modelo..." 
-                className="pl-12 h-14 bg-[#141414] border-white/5 focus:border-[#00ff88]/50 rounded-xl text-lg transition-all"
+                className="pl-12 h-14 bg-[#141414] border-white/5 focus:border-[#00ff88]/50 rounded-xl text-sm sm:text-lg transition-all"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -307,7 +307,7 @@ function Dashboard() {
                     </div>
                   </AccordionTrigger>
                   <AccordionContent className="pb-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pt-2">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4 pt-2">
                       {filteredAssets.filter(a => a.category === cat.id).map(asset => (
                         <AssetCard key={asset.id} asset={asset} isAdmin={isAdmin} />
                       ))}
@@ -692,7 +692,7 @@ function AssetDialog({ isAdmin, asset, trigger }: { isAdmin: boolean, asset?: an
               {asset ? 'Editar Registro de Acesso' : 'Novo Registro de Acesso'}
             </DialogTitle>
           </DialogHeader>
-          <div className="flex-1 overflow-y-auto p-8 custom-scrollbar">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-8 custom-scrollbar">
             <div className="space-y-10 pb-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="space-y-3">
@@ -1007,9 +1007,9 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
         )}
       </div>
 
-      <div className="flex gap-6 overflow-x-auto pb-6 custom-scrollbar">
+      <div className="flex gap-4 sm:gap-6 overflow-x-auto pb-6 no-scrollbar">
         {columns.map(col => (
-          <div key={col} className="bg-[#141414] border border-white/5 rounded-2xl p-4 min-w-[320px] flex-1">
+          <div key={col} className="bg-[#141414] border border-white/5 rounded-2xl p-4 min-w-[280px] sm:min-w-[320px] flex-1">
             <div className="flex items-center justify-between mb-6 px-2">
               <h3 className="font-bold flex items-center gap-2 text-sm uppercase tracking-wider">
                 <div className={`w-2 h-2 rounded-full ${col === 'Concluído' ? 'bg-[#00ff88]' : col === 'Em Atendimento' ? 'bg-blue-500' : col === 'Aberto' ? 'bg-yellow-500' : 'bg-gray-500'}`} />
@@ -1298,7 +1298,7 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-6">
         {tasks.map(task => (
           <Card key={task.id} className="bg-[#141414] border-white/5 hover:border-white/10 transition-all group">
             <CardContent className="p-6 space-y-4">
@@ -1533,7 +1533,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                 <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-3">
                   <User className="w-4 h-4" /> Gestão de Usuários
                 </div>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
                   {users.map(u => (
                     <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 gap-4">
                       <div className="flex items-center gap-4">
@@ -1643,7 +1643,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
           {customers.map(customer => (
             <div key={customer.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group gap-4">
               <div className="flex-1 min-w-0">
@@ -1670,6 +1670,8 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
 }
 
 function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin: boolean }) {
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  
   const stats = {
     pago: datacenters.filter(dc => dc.enelStatus === 'Pago').length,
     pendente: datacenters.filter(dc => dc.enelStatus === 'Pendente').length,
@@ -1677,14 +1679,65 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
     naoConsultado: datacenters.filter(dc => !dc.enelStatus).length,
   };
 
+  const syncAllEnel = async () => {
+    if (!isAdmin) return;
+    if (!confirm("Deseja sincronizar o status ENEL de todos os datacenters? Isso pode levar alguns minutos.")) return;
+    
+    setIsSyncingAll(true);
+    try {
+      for (const dc of datacenters) {
+        if (dc.enelClientId && dc.enelCpfCnpj) {
+          console.log(`Sincronizando ${dc.name}...`);
+          try {
+            const response = await fetch("/api/enel/check-status", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                clientId: dc.enelClientId,
+                cpfCnpj: dc.enelCpfCnpj
+              })
+            });
+            const data = await response.json();
+            if (data.status && data.status !== "Manual Action Required") {
+              await updateDoc(doc(db, 'datacenters', dc.id), {
+                lastEnelCheck: new Date().toISOString(),
+                enelStatus: data.status
+              });
+            }
+          } catch (e) {
+            console.error(`Erro ao sincronizar ${dc.name}:`, e);
+          }
+        }
+      }
+      alert("Sincronização em massa concluída!");
+    } catch (err) {
+      console.error("Erro na sincronização em massa:", err);
+    } finally {
+      setIsSyncingAll(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Datacenters</h2>
-          <p className="text-gray-500 text-sm">Gestão de POPs e energia ENEL Ceará</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Datacenters</h2>
+          <p className="text-gray-500 text-xs sm:text-sm">Gestão de POPs e energia ENEL Ceará</p>
         </div>
-        {isAdmin && <NewDatacenterDialog />}
+        <div className="flex flex-wrap gap-2">
+          {isAdmin && (
+            <Button 
+              onClick={syncAllEnel} 
+              disabled={isSyncingAll}
+              variant="outline" 
+              className="border-[#00ff88]/30 text-[#00ff88] hover:bg-[#00ff88]/10 text-xs h-9"
+            >
+              {isSyncingAll ? <RefreshCw className="w-3 h-3 animate-spin mr-2" /> : <RefreshCw className="w-3 h-3 mr-2" />}
+              {isSyncingAll ? 'Sincronizando...' : 'Sincronizar Todos'}
+            </Button>
+          )}
+          {isAdmin && <NewDatacenterDialog />}
+        </div>
       </div>
 
       {/* Relatório ENEL */}
@@ -1707,7 +1760,7 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
         </Card>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {datacenters.map(dc => (
           <DatacenterCard key={dc.id} dc={dc} isAdmin={isAdmin} />
         ))}
@@ -1722,21 +1775,34 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
   const [isCheckingEnel, setIsCheckingEnel] = useState(false);
 
   const checkEnelPayment = async () => {
-    if (!dc.enelClientId) return;
+    if (!dc.enelClientId || !dc.enelCpfCnpj) {
+      alert("Número do Cliente e CPF/CNPJ são necessários para a consulta.");
+      return;
+    }
     setIsCheckingEnel(true);
     try {
-      // Simulação de integração com API da ENEL
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const statuses = ['Pago', 'Pendente', 'Vencido'];
-      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
-      
-      await updateDoc(doc(db, 'datacenters', dc.id), {
-        lastEnelCheck: new Date().toISOString(),
-        enelStatus: randomStatus
+      const response = await fetch("/api/enel/check-status", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          clientId: dc.enelClientId,
+          cpfCnpj: dc.enelCpfCnpj
+        })
       });
+
+      const data = await response.json();
+      
+      if (data.status === "Manual Action Required") {
+        alert(data.message);
+      } else if (data.status) {
+        await updateDoc(doc(db, 'datacenters', dc.id), {
+          lastEnelCheck: new Date().toISOString(),
+          enelStatus: data.status
+        });
+      }
     } catch (err) {
       console.error("Erro ao consultar ENEL:", err);
+      alert("Erro ao conectar com o serviço de consulta.");
     } finally {
       setIsCheckingEnel(false);
     }
@@ -2078,7 +2144,7 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-4">
         {filteredStock.map(item => (
           <Card key={item.id} className={`group bg-[#141414] border-white/5 hover:border-white/10 transition-all ${item.quantity <= item.minQuantity ? 'border-red-500/50 bg-red-500/5' : ''}`}>
             <CardContent className="p-5">
