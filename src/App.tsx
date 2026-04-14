@@ -27,7 +27,8 @@ import {
   Settings,
   Calendar,
   Phone,
-  User
+  User,
+  RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -1527,18 +1528,18 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                 </div>
                 <div className="space-y-4">
                   {users.map(u => (
-                    <div key={u.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5">
+                    <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 gap-4">
                       <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center font-bold">
+                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center font-bold shrink-0">
                           {u.displayName?.charAt(0) || u.email?.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                          <p className="text-sm font-medium text-gray-200">{u.displayName || 'Sem nome'}</p>
-                          <p className="text-xs text-gray-500">{u.email}</p>
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-gray-200 truncate">{u.displayName || 'Sem nome'}</p>
+                          <p className="text-xs text-gray-500 truncate">{u.email}</p>
                         </div>
                       </div>
                       <Select value={u.role || 'pending'} onValueChange={(v) => updateUserRole(u.id, v)}>
-                        <SelectTrigger className="w-[120px] bg-white/5 border-white/10 h-9">
+                        <SelectTrigger className="w-full sm:w-[120px] bg-white/5 border-white/10 h-9">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
@@ -1637,14 +1638,14 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {customers.map(customer => (
-            <div key={customer.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group">
-              <div>
-                <p className="text-sm font-bold text-gray-200">{customer.name}</p>
-                <p className="text-[10px] text-gray-500 uppercase">{customer.address || 'SEM ENDEREÇO'}</p>
+            <div key={customer.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group gap-4">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-200 truncate">{customer.name}</p>
+                <p className="text-[10px] text-gray-500 uppercase truncate">{customer.address || 'SEM ENDEREÇO'}</p>
                 <p className="text-[10px] text-gray-600 font-mono">{customer.cpfCnpj || 'SEM CPF/CNPJ'}</p>
               </div>
               {isAdmin && (
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id)} className="opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all">
+                <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id)} className="sm:opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all shrink-0">
                   <Trash2 className="w-4 h-4" />
                 </Button>
               )}
@@ -1684,6 +1685,28 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
 function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...dc });
+  const [isCheckingEnel, setIsCheckingEnel] = useState(false);
+
+  const checkEnelPayment = async () => {
+    if (!dc.enelClientId) return;
+    setIsCheckingEnel(true);
+    try {
+      // Simulação de integração com API da ENEL
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      const statuses = ['Pago', 'Pendente', 'Vencido'];
+      const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+      
+      await updateDoc(doc(db, 'datacenters', dc.id), {
+        lastEnelCheck: new Date().toISOString(),
+        enelStatus: randomStatus
+      });
+    } catch (err) {
+      console.error("Erro ao consultar ENEL:", err);
+    } finally {
+      setIsCheckingEnel(false);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!isAdmin) return;
@@ -1714,7 +1737,7 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
             <Database className="w-4 h-4" />
           </div>
           <div>
-            <CardTitle className="text-sm font-bold">{dc.name}</CardTitle>
+            <CardTitle className="text-sm font-bold text-blue-500">{dc.name}</CardTitle>
             <p className="text-[10px] text-gray-500 flex items-center gap-1">
               <Map className="w-2 h-2" /> {dc.location}
             </p>
@@ -1804,6 +1827,38 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
           <div className="pt-2 border-t border-white/5">
             <p className="text-[9px] text-gray-500 uppercase font-bold">Última Limpeza</p>
             <p className="text-xs text-gray-300">{dc.lastCleaning ? new Date(dc.lastCleaning).toLocaleDateString() : '-'}</p>
+          </div>
+
+          <div className="pt-4 border-t border-white/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-[9px] text-gray-500 uppercase font-bold">Status ENEL</p>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className={`text-[10px] ${
+                    dc.enelStatus === 'Pago' ? 'text-[#00ff88] border-[#00ff88]/30' : 
+                    dc.enelStatus === 'Vencido' ? 'text-red-500 border-red-500/30' : 
+                    'text-yellow-500 border-yellow-500/30'
+                  }`}>
+                    {dc.enelStatus || 'Não consultado'}
+                  </Badge>
+                  {dc.lastEnelCheck && (
+                    <span className="text-[8px] text-gray-600">
+                      {new Date(dc.lastEnelCheck).toLocaleDateString()}
+                    </span>
+                  )}
+                </div>
+              </div>
+              <Button 
+                size="sm" 
+                variant="ghost" 
+                disabled={!dc.enelClientId || isCheckingEnel}
+                onClick={checkEnelPayment}
+                className="h-8 text-[10px] text-[#00ff88] hover:bg-[#00ff88]/10"
+              >
+                {isCheckingEnel ? <Clock className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                Consultar
+              </Button>
+            </div>
           </div>
         </div>
       </CardContent>
