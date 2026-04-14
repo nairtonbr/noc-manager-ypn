@@ -171,11 +171,13 @@ function Dashboard() {
     );
   }
 
-  const filteredAssets = assets.filter(asset => 
-    asset.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    asset.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    asset.model?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredAssets = assets
+    .filter(asset => 
+      asset.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.manufacturer?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      asset.model?.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
   const categories = [
     { id: 'Servers', icon: <Server className="w-4 h-4" />, label: 'Servers' },
@@ -1663,6 +1665,13 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
 }
 
 function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin: boolean }) {
+  const stats = {
+    pago: datacenters.filter(dc => dc.enelStatus === 'Pago').length,
+    pendente: datacenters.filter(dc => dc.enelStatus === 'Pendente').length,
+    vencido: datacenters.filter(dc => dc.enelStatus === 'Vencido').length,
+    naoConsultado: datacenters.filter(dc => !dc.enelStatus).length,
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -1671,6 +1680,26 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
           <p className="text-gray-500 text-sm">Gestão de POPs e energia ENEL Ceará</p>
         </div>
         {isAdmin && <NewDatacenterDialog />}
+      </div>
+
+      {/* Relatório ENEL */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Pagos</p>
+          <p className="text-2xl font-bold text-[#00ff88]">{stats.pago}</p>
+        </Card>
+        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Pendentes</p>
+          <p className="text-2xl font-bold text-yellow-500">{stats.pendente}</p>
+        </Card>
+        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Vencidos</p>
+          <p className="text-2xl font-bold text-red-500">{stats.vencido}</p>
+        </Card>
+        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
+          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Não Consultados</p>
+          <p className="text-2xl font-bold text-gray-500">{stats.naoConsultado}</p>
+        </Card>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -1756,13 +1785,25 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
                       <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10" />
                     </div>
                     <div className="space-y-2">
+                      <Label>Tipo</Label>
+                      <Select value={formData.type} onValueChange={v => setFormData({...formData, type: v})}>
+                        <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          <SelectItem value="Próprio">Próprio</SelectItem>
+                          <SelectItem value="Alugado">Alugado</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
                       <Label>Localização</Label>
                       <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="bg-white/5 border-white/10" />
                     </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Endereço</Label>
-                    <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10" />
+                    <div className="space-y-2">
+                      <Label>Endereço</Label>
+                      <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10" />
+                    </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
