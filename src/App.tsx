@@ -348,6 +348,11 @@ function Dashboard() {
   );
 }
 
+const truncate = (text: string, length: number = 30) => {
+  if (!text) return "";
+  return text.length > length ? text.substring(0, length) + "..." : text;
+};
+
 const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -405,7 +410,7 @@ const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin 
           </span>
           <div className="flex items-center gap-2">
             <span className="text-xs font-mono text-[#00ff88]">
-              {asset.category === 'Upstream/Downstream' ? (asset.circuitId || 'Vazio') : (asset.ipv4 || asset.url || 'N/A')}
+              {asset.category === 'Upstream/Downstream' ? truncate(asset.circuitId || 'Vazio', 25) : truncate(asset.ipv4 || asset.url || 'N/A', 35)}
             </span>
             {(asset.ipv4 || asset.url || asset.circuitId) && (
               <Button 
@@ -534,7 +539,7 @@ function PropertyRow({ icon, label, value, isLink }: { icon: any, label: string,
           <a href={value} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#00ff88] hover:underline font-mono">Link Externo</a>
         ) : (
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-[#00ff88]">{value || 'Vazio'}</span>
+            <span className="text-[11px] font-mono text-[#00ff88]">{truncate(value || 'Vazio', 30)}</span>
             {value && (
               <Button 
                 variant="ghost" 
@@ -1824,6 +1829,10 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
                       <Label>CPF do Titular</Label>
                       <Input value={formData.enelOwnerCpf} onChange={e => setFormData({...formData, enelOwnerCpf: e.target.value})} className="bg-white/5 border-white/10" />
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Última Limpeza</Label>
+                    <Input type="date" value={formData.lastCleaning} onChange={e => setFormData({...formData, lastCleaning: e.target.value})} className="bg-white/5 border-white/10" />
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
