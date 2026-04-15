@@ -73,6 +73,13 @@ service cloud.firestore {
              (!('triggerTickets' in data) || data.triggerTickets is bool);
     }
 
+    function isValidComment(data) {
+      return data.text is string && data.text.size() > 0 && data.text.size() < 5000 &&
+             data.authorName is string &&
+             data.authorUid == request.auth.uid &&
+             data.createdAt is string;
+    }
+
     match /assets/{assetId} {
       allow read: if hasRole();
       allow write: if isAdmin() && isValidAsset(request.resource.data);
@@ -81,6 +88,12 @@ service cloud.firestore {
     match /tickets/{ticketId} {
       allow read: if hasRole();
       allow write: if isAdmin() && isValidTicket(request.resource.data);
+
+      match /comments/{commentId} {
+        allow read: if hasRole();
+        allow create: if hasRole() && isValidComment(request.resource.data);
+        allow delete: if isAdmin() || (isAuthenticated() && resource.data.authorUid == request.auth.uid);
+      }
     }
 
     match /datacenters/{dcId} {

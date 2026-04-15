@@ -137,11 +137,24 @@
         "triggerTasks": { "type": "boolean" },
         "triggerTickets": { "type": "boolean" }
       }
+    },
+    "Comment": {
+      "title": "Comment",
+      "description": "Comments on tickets",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "authorName": { "type": "string" },
+        "authorUid": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "authorName", "authorUid", "createdAt"]
     }
   },
   "firestore": {
     "/assets/{assetId}": { "schema": "Asset", "description": "Assets collection" },
     "/tickets/{ticketId}": { "schema": "Ticket", "description": "Tickets collection" },
+    "/tickets/{ticketId}/comments/{commentId}": { "schema": "Comment", "description": "Comments sub-collection for tickets" },
     "/datacenters/{dcId}": { "schema": "Datacenter", "description": "Datacenters collection" },
     "/stock/{itemId}": { "schema": "StockItem", "description": "Inventory collection" },
     "/tasks/{taskId}": { "schema": "Task", "description": "Tasks collection" },

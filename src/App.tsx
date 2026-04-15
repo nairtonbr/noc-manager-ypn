@@ -28,7 +28,9 @@ import {
   Calendar,
   Phone,
   User,
-  RefreshCw
+  RefreshCw,
+  MessageSquare,
+  Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -193,20 +195,20 @@ function Dashboard() {
       {/* Header */}
       <header className="border-b border-white/5 bg-[#0d0d0d]/80 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-[95%] mx-auto px-4 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#00ff88] rounded-md flex items-center justify-center">
-              <Terminal className="text-black w-5 h-5" />
+          <div className="flex items-center gap-2 sm:gap-3">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#00ff88] rounded-md flex items-center justify-center">
+              <Terminal className="text-black w-4 h-4 sm:w-5 sm:h-5" />
             </div>
-            <h1 className="text-xl font-bold tracking-tight">NOC Manager</h1>
+            <h1 className="text-lg sm:text-xl font-bold tracking-tight">NOC Manager</h1>
           </div>
           
-          <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-white/5 rounded-full border border-white/10">
               <div className="w-2 h-2 bg-[#00ff88] rounded-full animate-pulse" />
               <span className="text-xs font-medium text-gray-300">{user?.email}</span>
             </div>
-            <Button variant="ghost" size="icon" onClick={logout} className="text-gray-400 hover:text-white hover:bg-white/5">
-              <LogOut className="w-5 h-5" />
+            <Button variant="ghost" size="icon" onClick={logout} className="text-gray-400 hover:text-white hover:bg-white/5 h-8 w-8 sm:h-10 sm:w-10">
+              <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
             </Button>
           </div>
         </div>
@@ -217,74 +219,76 @@ function Dashboard() {
         <div className="bg-[#141414] border border-white/5 rounded-xl sm:rounded-2xl p-4 sm:p-6 mb-6 sm:mb-8 flex flex-col xl:flex-row xl:items-center justify-between gap-6 sm:gap-8">
           <div className="flex flex-col lg:flex-row lg:items-center gap-6 sm:gap-8 flex-1">
             <div className="pr-0 lg:pr-8 border-b lg:border-b-0 lg:border-r border-white/10 shrink-0 pb-4 lg:pb-0 text-center lg:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-white mb-1">YPN TECNOLOGIA</h2>
+              <h2 className="text-xl sm:text-3xl font-bold text-white mb-1">YPN TECNOLOGIA</h2>
               <p className="text-[10px] sm:text-xs text-gray-500 uppercase tracking-widest">CNPJ: 16.742.294/0001-67</p>
               <p className="text-[9px] sm:text-[10px] text-gray-600 mt-1">Rodovia Mendel Steinbruch, 4294 - Pacatuba/CE</p>
             </div>
-            <div className="flex flex-wrap justify-center lg:justify-start gap-x-8 sm:gap-x-12 gap-y-6">
-              <div className="space-y-3">
-                <p className="text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">YPN Tecnologia</p>
-                <div className="flex flex-wrap gap-4 sm:gap-8">
+            <div className="flex flex-wrap justify-center lg:justify-start gap-x-6 sm:gap-x-12 gap-y-4 sm:gap-y-6">
+              <div className="space-y-2 sm:space-y-3">
+                <p className="text-[9px] sm:text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">YPN Tecnologia</p>
+                <div className="flex flex-wrap gap-3 sm:gap-8">
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">ASN</p>
-                    <p className="text-xs font-mono text-gray-300">AS273500</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">ASN</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">AS273500</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">IPv4</p>
-                    <p className="text-xs font-mono text-gray-300">186.227.68.0/22</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">IPv4</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">186.227.68.0/22</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">IPv6</p>
-                    <p className="text-xs font-mono text-gray-300">2804:8f98::/32</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">IPv6</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">2804:8f98::/32</p>
                   </div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <p className="text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">Conet Telecom</p>
-                <div className="flex flex-wrap gap-4 sm:gap-8">
+              <div className="space-y-2 sm:space-y-3">
+                <p className="text-[9px] sm:text-[10px] text-[#00ff88] uppercase font-bold tracking-tighter">Conet Telecom</p>
+                <div className="flex flex-wrap gap-3 sm:gap-8">
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">ASN</p>
-                    <p className="text-xs font-mono text-gray-300">AS267576</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">ASN</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">AS267576</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">IPv4</p>
-                    <p className="text-xs font-mono text-gray-300">45.70.176.0/22</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">IPv4</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">45.70.176.0/22</p>
                   </div>
                   <div>
-                    <p className="text-[9px] text-gray-500 uppercase font-bold mb-1">IPv6</p>
-                    <p className="text-xs font-mono text-gray-300">2804:4388::/32</p>
+                    <p className="text-[8px] sm:text-[9px] text-gray-500 uppercase font-bold mb-0.5 sm:mb-1">IPv6</p>
+                    <p className="text-[10px] sm:text-xs font-mono text-gray-300">2804:4388::/32</p>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          {isAdmin && <AssetDialog isAdmin={isAdmin} />}
+          {isAdmin && <div className="w-full sm:w-auto"><AssetDialog isAdmin={isAdmin} /></div>}
         </div>
 
         {/* Main Tabs */}
         <Tabs defaultValue="assets" className="space-y-6" onValueChange={setActiveTab}>
-          <TabsList className="bg-white/5 border border-white/10 p-1 rounded-full h-12 w-full justify-start overflow-x-auto no-scrollbar flex-nowrap">
-            <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Ativos e Acessos
-            </TabsTrigger>
-            <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Tickets NOC
-            </TabsTrigger>
-            <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Tarefas
-            </TabsTrigger>
-            <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Datacenters / POPs
-            </TabsTrigger>
-            <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Estoque
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-4 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
-              Configurações
-            </TabsTrigger>
-          </TabsList>
+          <div className="relative">
+            <TabsList className="bg-white/5 border border-white/10 p-1 rounded-full h-12 w-full justify-start overflow-x-auto no-scrollbar flex-nowrap">
+              <TabsTrigger value="assets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Ativos e Acessos
+              </TabsTrigger>
+              <TabsTrigger value="tickets" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Tickets NOC
+              </TabsTrigger>
+              <TabsTrigger value="tasks" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Tarefas
+              </TabsTrigger>
+              <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Datacenters / POPs
+              </TabsTrigger>
+              <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Estoque
+              </TabsTrigger>
+              <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Configurações
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
-          <TabsContent value="assets" className="space-y-6">
+          <TabsContent value="assets" className="space-y-6 mt-4">
             {/* Search Bar */}
             <div className="relative group">
               <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-500 group-focus-within:text-[#00ff88] transition-colors" />
@@ -323,23 +327,23 @@ function Dashboard() {
             </Accordion>
           </TabsContent>
 
-          <TabsContent value="tickets">
+          <TabsContent value="tickets" className="mt-4 sm:mt-0">
             <TicketBoard tickets={tickets} customers={customers} isAdmin={isAdmin} onNotify={onWhatsAppNotification} settings={settings} />
           </TabsContent>
 
-          <TabsContent value="tasks">
+          <TabsContent value="tasks" className="mt-4 sm:mt-0">
             <TaskManager tasks={tasks} isAdmin={isAdmin} onNotify={onWhatsAppNotification} settings={settings} />
           </TabsContent>
 
-          <TabsContent value="datacenters">
+          <TabsContent value="datacenters" className="mt-4 sm:mt-0">
             <DatacenterGrid datacenters={datacenters} isAdmin={isAdmin} />
           </TabsContent>
           
-          <TabsContent value="stock">
+          <TabsContent value="stock" className="mt-4 sm:mt-0">
             <StockManager stock={stock} isAdmin={isAdmin} />
           </TabsContent>
 
-          <TabsContent value="settings">
+          <TabsContent value="settings" className="mt-4 sm:mt-0">
             <SettingsManager settings={settings} users={users} customers={customers} isAdmin={isAdmin} />
           </TabsContent>
         </Tabs>
@@ -351,6 +355,11 @@ function Dashboard() {
 const truncate = (text: string, length: number = 30) => {
   if (!text) return "";
   return text.length > length ? text.substring(0, length) + "..." : text;
+};
+
+const cleanUrl = (val: string) => {
+  if (!val) return "";
+  return val.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '').split('?')[0];
 };
 
 const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin }) => {
@@ -403,14 +412,16 @@ const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin 
         )}
       </div>
 
-      <div className="bg-black/40 rounded-lg p-3 flex items-center justify-between mb-4 border border-white/5 group/main">
-        <div className="flex flex-col">
+      <div className="bg-black/40 rounded-lg p-3 flex items-center justify-between mb-4 border border-white/5 group/main overflow-hidden">
+        <div className="flex flex-col min-w-0 flex-1">
           <span className="text-[9px] text-gray-500 uppercase font-bold mb-1">
             {asset.category === 'Upstream/Downstream' ? 'DESIGNAÇÃO CI' : 'IPv4 / HOST'}
           </span>
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-mono text-[#00ff88]">
-              {asset.category === 'Upstream/Downstream' ? truncate(asset.circuitId || 'Vazio', 25) : truncate(asset.ipv4 || asset.url || 'N/A', 35)}
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-xs font-mono text-[#00ff88] truncate max-w-[180px] sm:max-w-[250px]" title={asset.ipv4 || asset.url || asset.circuitId}>
+              {asset.category === 'Upstream/Downstream' 
+                ? (asset.circuitId || 'Vazio') 
+                : truncate(cleanUrl(asset.ipv4 || asset.url || 'N/A'), 35)}
             </span>
             {(asset.ipv4 || asset.url || asset.circuitId) && (
               <Button 
@@ -529,17 +540,19 @@ function PropertyRow({ icon, label, value, isLink }: { icon: any, label: string,
   };
 
   return (
-    <div className="flex items-center justify-between group/row bg-black/40 hover:bg-black/60 transition-colors p-3 rounded-lg border border-white/5">
-      <div className="flex items-center gap-2 text-gray-400">
+    <div className="flex items-center justify-between group/row bg-black/40 hover:bg-black/60 transition-colors p-3 rounded-lg border border-white/5 min-w-0 gap-4">
+      <div className="flex items-center gap-2 text-gray-400 shrink-0">
         <div className="opacity-50">{icon}</div>
         <span className="text-[9px] font-bold uppercase tracking-tight">{label}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-w-0">
         {isLink && value ? (
-          <a href={value} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#00ff88] hover:underline font-mono">Link Externo</a>
+          <a href={value} target="_blank" rel="noopener noreferrer" className="text-[11px] text-[#00ff88] hover:underline font-mono truncate max-w-[150px] sm:max-w-[300px]" title={value}>Link Externo</a>
         ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-[11px] font-mono text-[#00ff88]">{truncate(value || 'Vazio', 30)}</span>
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-[11px] font-mono text-[#00ff88] truncate max-w-[120px] sm:max-w-[250px]" title={value}>
+              {(label === 'URL/DOMAIN' || label === 'LINK DRAW.IO' || (value && value.startsWith('http'))) ? truncate(cleanUrl(value), 30) : (value || 'Vazio')}
+            </span>
             {value && (
               <Button 
                 variant="ghost" 
@@ -678,8 +691,8 @@ function AssetDialog({ isAdmin, asset, trigger }: { isAdmin: boolean, asset?: an
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger render={trigger || (
-        <Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-6 py-6 rounded-xl shadow-[0_0_20px_rgba(0,255,136,0.2)]">
-          <Plus className="w-5 h-5 mr-2" /> Novo Acesso
+        <Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-[0_0_20px_rgba(0,255,136,0.2)] w-full sm:w-auto text-xs sm:text-base">
+          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Novo Acesso
         </Button>
       )} />
       <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col p-0 rounded-2xl shadow-2xl">
@@ -877,6 +890,44 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
     minutes: 0
   });
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState('details');
+  const [comments, setComments] = useState<any[]>([]);
+  const [newComment, setNewComment] = useState('');
+  const [isAddingComment, setIsAddingComment] = useState(false);
+
+  useEffect(() => {
+    if (selectedTicket && activeTab === 'comments') {
+      const q = query(
+        collection(db, 'tickets', selectedTicket.id, 'comments'),
+        orderBy('createdAt', 'desc')
+      );
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setComments(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+      }, (err) => {
+        handleFirestoreError(err, OperationType.LIST, `tickets/${selectedTicket.id}/comments`);
+      });
+      return () => unsubscribe();
+    }
+  }, [selectedTicket, activeTab]);
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newComment.trim() || !selectedTicket || !user) return;
+    setIsAddingComment(true);
+    try {
+      await addDoc(collection(db, 'tickets', selectedTicket.id, 'comments'), {
+        text: newComment,
+        authorName: user.displayName || user.email || 'Usuário',
+        authorUid: user.uid,
+        createdAt: new Date().toISOString()
+      });
+      setNewComment('');
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `tickets/${selectedTicket.id}/comments`);
+    } finally {
+      setIsAddingComment(false);
+    }
+  };
 
   const handleCreateTicket = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -940,11 +991,14 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold">Quadro de Tickets</h2>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold">Quadro de Tickets</h2>
+          <p className="text-gray-500 text-xs sm:text-sm">Gestão de chamados e incidentes</p>
+        </div>
         {isAdmin && (
           <Dialog open={isNewTicketOpen} onOpenChange={(v) => { setIsNewTicketOpen(v); if(v) resetForm(); }}>
-            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Novo Ticket</Button>} />
+            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto"><Plus className="w-4 h-4 mr-2" /> Novo Ticket</Button>} />
             <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-4xl p-0 overflow-hidden rounded-2xl">
               <DialogHeader className="p-6 border-b border-white/5 bg-[#141414]">
                 <DialogTitle className="text-xl font-bold text-[#00ff88]">Novo Ticket NOC</DialogTitle>
@@ -1056,14 +1110,14 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
       </div>
 
       {/* Ticket Details Dialog */}
-      <Dialog open={!!selectedTicket} onOpenChange={(v) => { if(!v) setSelectedTicket(null); }}>
+      <Dialog open={!!selectedTicket} onOpenChange={(v) => { if(!v) setSelectedTicket(null); if(v) setActiveTab('details'); }}>
         <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-5xl p-0 overflow-hidden rounded-2xl flex flex-col max-h-[95vh]">
           <div className="p-4 border-b border-white/5 flex items-center justify-between bg-[#141414]">
             <div className="flex items-center gap-6">
-              <Tabs defaultValue="details" className="h-10">
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="h-10">
                 <TabsList className="bg-transparent border-none p-0 h-full">
                   <TabsTrigger value="details" className="data-[state=active]:text-[#00ff88] data-[state=active]:border-b-2 data-[state=active]:border-[#00ff88] rounded-none px-4 h-full bg-transparent border-none text-xs font-bold uppercase tracking-widest text-gray-500">Detalhes</TabsTrigger>
-                  <TabsTrigger value="comments" className="data-[state=active]:text-[#00ff88] data-[state=active]:border-b-2 data-[state=active]:border-[#00ff88] rounded-none px-4 h-full bg-transparent border-none text-xs font-bold uppercase tracking-widest text-gray-500">Comentários (0)</TabsTrigger>
+                  <TabsTrigger value="comments" className="data-[state=active]:text-[#00ff88] data-[state=active]:border-b-2 data-[state=active]:border-[#00ff88] rounded-none px-4 h-full bg-transparent border-none text-xs font-bold uppercase tracking-widest text-gray-500">Comentários ({comments.length})</TabsTrigger>
                   <TabsTrigger value="attachments" className="data-[state=active]:text-[#00ff88] data-[state=active]:border-b-2 data-[state=active]:border-[#00ff88] rounded-none px-4 h-full bg-transparent border-none text-xs font-bold uppercase tracking-widest text-gray-500">Anexos (0)</TabsTrigger>
                   <TabsTrigger value="history" className="data-[state=active]:text-[#00ff88] data-[state=active]:border-b-2 data-[state=active]:border-[#00ff88] rounded-none px-4 h-full bg-transparent border-none text-xs font-bold uppercase tracking-widest text-gray-500">Histórico</TabsTrigger>
                 </TabsList>
@@ -1077,105 +1131,143 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
             </div>
           </div>
 
-          <ScrollArea className="flex-1">
-            <div className="p-8 space-y-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
-                {/* Left Column */}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Cliente *</Label>
-                    <Select value={formData.client} onValueChange={v => setFormData({...formData, client: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        {customers.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+          <TabsContent value="details" className="flex-1 overflow-hidden flex flex-col m-0">
+            <ScrollArea className="flex-1">
+              <div className="p-8 space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-8">
+                  {/* Left Column */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Cliente *</Label>
+                      <Select value={formData.client} onValueChange={v => setFormData({...formData, client: v})}>
+                        <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          {customers.map(c => <SelectItem key={c.id} value={c.name}>{c.name}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Categoria *</Label>
+                      <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
+                        <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          {["Engenharia IP", "Infraestrutura", "NOC", "Projetos", "Suporte"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Abertura</Label>
+                      <Input readOnly value={formData.openedAt ? new Date(formData.openedAt).toLocaleString('pt-BR') : '-'} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold text-gray-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Tempo Aberto</Label>
+                      <Input readOnly value={calculateOpenTime(formData.openedAt)} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold text-gray-400" />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">SLA / Prazo *</Label>
+                      <Input type="datetime-local" value={formData.slaDeadline} onChange={e => setFormData({...formData, slaDeadline: e.target.value})} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Categoria *</Label>
-                    <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        {["Engenharia IP", "Infraestrutura", "NOC", "Projetos", "Suporte"].map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Abertura</Label>
-                    <Input readOnly value={formData.openedAt ? new Date(formData.openedAt).toLocaleString('pt-BR') : '-'} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold text-gray-400" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Tempo Aberto</Label>
-                    <Input readOnly value={calculateOpenTime(formData.openedAt)} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold text-gray-400" />
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">SLA / Prazo *</Label>
-                    <Input type="datetime-local" value={formData.slaDeadline} onChange={e => setFormData({...formData, slaDeadline: e.target.value})} className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold" />
+
+                  {/* Right Column */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Status *</Label>
+                      <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
+                        <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          {columns.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Prioridade *</Label>
+                      <Select value={formData.priority} onValueChange={v => setFormData({...formData, priority: v})}>
+                        <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          {["Baixa", "Média", "Alta", "Crítica"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Responsável *</Label>
+                      <Select required value={formData.responsible} onValueChange={v => setFormData({...formData, responsible: v})}>
+                        <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue placeholder="Selecione o Responsável" /></SelectTrigger>
+                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                          {["Nairton Braga", "Equipe NOC", "Engenharia", "Infraestrutura"].map(resp => <SelectItem key={resp} value={resp}>{resp}</SelectItem>)}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
                 </div>
 
-                {/* Right Column */}
-                <div className="space-y-6">
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Status *</Label>
-                    <Select value={formData.status} onValueChange={v => setFormData({...formData, status: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        {columns.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                {/* Controle de Horas */}
+                <div className="space-y-6 pt-8 border-t border-white/5">
+                  <div className="flex items-center gap-3 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+                    <Clock className="w-4 h-4" /> Controle de Horas
                   </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Prioridade *</Label>
-                    <Select value={formData.priority} onValueChange={v => setFormData({...formData, priority: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue /></SelectTrigger>
-                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        {["Baixa", "Média", "Alta", "Crítica"].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label className="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Responsável *</Label>
-                    <Select required value={formData.responsible} onValueChange={v => setFormData({...formData, responsible: v})}>
-                      <SelectTrigger className="bg-[#1c1c1c] border-white/5 h-11 text-sm font-bold"><SelectValue placeholder="Selecione o Responsável" /></SelectTrigger>
-                      <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                        {["Nairton Braga", "Equipe NOC", "Engenharia", "Infraestrutura"].map(resp => <SelectItem key={resp} value={resp}>{resp}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <Card className="bg-[#141414] border-white/5 p-6 rounded-xl">
+                      <p className="text-[10px] text-gray-500 uppercase font-bold mb-4">Total Acumulado</p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label className="text-[9px] text-gray-600 uppercase">Horas</Label>
+                          <Input type="number" value={formData.hours} onChange={e => setFormData({...formData, hours: parseInt(e.target.value)})} className="bg-[#0a0a0a] border-white/5 h-14 text-2xl font-bold text-center" />
+                        </div>
+                        <div className="space-y-2">
+                          <Label className="text-[9px] text-gray-600 uppercase">Minutos</Label>
+                          <Input type="number" value={formData.minutes} onChange={e => setFormData({...formData, minutes: parseInt(e.target.value)})} className="bg-[#0a0a0a] border-white/5 h-14 text-2xl font-bold text-center" />
+                        </div>
+                      </div>
+                    </Card>
+                    <Card className="bg-blue-600 border-none p-6 rounded-xl flex flex-col justify-between shadow-[0_10px_30px_rgba(37,99,235,0.3)]">
+                      <div>
+                        <p className="text-[10px] text-blue-200 uppercase font-bold mb-1">Total Geral (com sessão)</p>
+                        <p className="text-5xl font-bold text-white tracking-tighter">{formData.hours}h <span className="text-3xl text-blue-200">{formData.minutes.toString().padStart(2, '0')}m</span></p>
+                      </div>
+                      <p className="text-[9px] text-blue-300 uppercase font-bold tracking-widest mt-4">Tempo Total Registrado</p>
+                    </Card>
                   </div>
                 </div>
               </div>
+            </ScrollArea>
+          </TabsContent>
 
-              {/* Controle de Horas */}
-              <div className="space-y-6 pt-8 border-t border-white/5">
-                <div className="flex items-center gap-3 text-gray-400 text-[10px] font-bold uppercase tracking-[0.2em]">
-                  <Clock className="w-4 h-4" /> Controle de Horas
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  <Card className="bg-[#141414] border-white/5 p-6 rounded-xl">
-                    <p className="text-[10px] text-gray-500 uppercase font-bold mb-4">Total Acumulado</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label className="text-[9px] text-gray-600 uppercase">Horas</Label>
-                        <Input type="number" value={formData.hours} onChange={e => setFormData({...formData, hours: parseInt(e.target.value)})} className="bg-[#0a0a0a] border-white/5 h-14 text-2xl font-bold text-center" />
-                      </div>
-                      <div className="space-y-2">
-                        <Label className="text-[9px] text-gray-600 uppercase">Minutos</Label>
-                        <Input type="number" value={formData.minutes} onChange={e => setFormData({...formData, minutes: parseInt(e.target.value)})} className="bg-[#0a0a0a] border-white/5 h-14 text-2xl font-bold text-center" />
-                      </div>
+          <TabsContent value="comments" className="flex-1 overflow-hidden flex flex-col m-0">
+            <div className="flex-1 flex flex-col p-8 gap-6 overflow-hidden">
+              <ScrollArea className="flex-1 pr-4">
+                <div className="space-y-4">
+                  {comments.length === 0 ? (
+                    <div className="flex flex-col items-center justify-center py-20 text-gray-500 space-y-2">
+                      <MessageSquare className="w-12 h-12 opacity-20" />
+                      <p className="text-sm">Nenhum comentário ainda.</p>
                     </div>
-                  </Card>
-                  <Card className="bg-blue-600 border-none p-6 rounded-xl flex flex-col justify-between shadow-[0_10px_30px_rgba(37,99,235,0.3)]">
-                    <div>
-                      <p className="text-[10px] text-blue-200 uppercase font-bold mb-1">Total Geral (com sessão)</p>
-                      <p className="text-5xl font-bold text-white tracking-tighter">{formData.hours}h <span className="text-3xl text-blue-200">{formData.minutes.toString().padStart(2, '0')}m</span></p>
-                    </div>
-                    <p className="text-[9px] text-blue-300 uppercase font-bold tracking-widest mt-4">Tempo Total Registrado</p>
-                  </Card>
+                  ) : (
+                    comments.map(comment => (
+                      <div key={comment.id} className="bg-white/5 border border-white/5 p-4 rounded-xl space-y-2">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs font-bold text-[#00ff88]">{comment.authorName}</span>
+                          <span className="text-[10px] text-gray-500">{new Date(comment.createdAt).toLocaleString('pt-BR')}</span>
+                        </div>
+                        <p className="text-sm text-gray-300 whitespace-pre-wrap">{comment.text}</p>
+                      </div>
+                    ))
+                  )}
                 </div>
-              </div>
+              </ScrollArea>
+              <form onSubmit={handleAddComment} className="pt-6 border-t border-white/5 flex gap-4">
+                <Input 
+                  value={newComment} 
+                  onChange={e => setNewComment(e.target.value)} 
+                  placeholder="Escreva uma observação..." 
+                  className="bg-white/5 border-white/10 h-12"
+                />
+                <Button type="submit" disabled={isAddingComment || !newComment.trim()} className="bg-[#00ff88] text-black font-bold h-12 px-6">
+                  {isAddingComment ? <Clock className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                </Button>
+              </form>
             </div>
-          </ScrollArea>
+          </TabsContent>
 
           <div className="p-6 border-t border-white/5 bg-[#141414] flex justify-between items-center">
             <Button variant="ghost" onClick={() => setSelectedTicket(null)} className="text-gray-500 hover:text-white">Fechar</Button>
@@ -1244,14 +1336,14 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-[#00ff88]">Tarefas Operacionais</h2>
-          <p className="text-gray-500 text-sm">Gestão de atividades e manutenções</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-[#00ff88]">Tarefas Operacionais</h2>
+          <p className="text-gray-500 text-xs sm:text-sm">Gestão de atividades e manutenções</p>
         </div>
         {isAdmin && (
           <Dialog open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
-            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Nova Tarefa</Button>} />
+            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto"><Plus className="w-4 h-4 mr-2" /> Nova Tarefa</Button>} />
             <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl p-8">
               <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Nova Tarefa</DialogTitle></DialogHeader>
               <form onSubmit={handleCreateTask} className="space-y-6 py-4">
@@ -1533,28 +1625,33 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                 <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest border-b border-white/5 pb-3">
                   <User className="w-4 h-4" /> Gestão de Usuários
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                <div className="space-y-2">
                   {users.map(u => (
-                    <div key={u.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 gap-4">
-                      <div className="flex items-center gap-4">
-                        <div className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center font-bold shrink-0">
+                    <div key={u.id} className="flex items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors">
+                      <div className="flex items-center gap-4 min-w-0">
+                        <div className="w-10 h-10 bg-[#00ff88]/10 text-[#00ff88] rounded-full flex items-center justify-center font-bold shrink-0">
                           {u.displayName?.charAt(0) || u.email?.charAt(0).toUpperCase()}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-medium text-gray-200 truncate">{u.displayName || 'Sem nome'}</p>
+                          <p className="text-sm font-bold text-gray-200 truncate">{u.displayName || 'Sem nome'}</p>
                           <p className="text-xs text-gray-500 truncate">{u.email}</p>
                         </div>
                       </div>
-                      <Select value={u.role || 'pending'} onValueChange={(v) => updateUserRole(u.id, v)}>
-                        <SelectTrigger className="w-full sm:w-[120px] bg-white/5 border-white/10 h-9">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                          <SelectItem value="admin">Admin</SelectItem>
-                          <SelectItem value="user">User</SelectItem>
-                          <SelectItem value="pending">Pending</SelectItem>
-                        </SelectContent>
-                      </Select>
+                      <div className="flex items-center gap-4">
+                        <Badge variant="outline" className={`hidden sm:flex text-[10px] ${u.role === 'admin' ? 'text-[#00ff88] border-[#00ff88]/30' : 'text-gray-500 border-white/10'}`}>
+                          {u.role?.toUpperCase() || 'PENDING'}
+                        </Badge>
+                        <Select value={u.role || 'pending'} onValueChange={(v) => updateUserRole(u.id, v)}>
+                          <SelectTrigger className="w-[110px] bg-white/5 border-white/10 h-9 text-xs">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                            <SelectItem value="admin">Admin</SelectItem>
+                            <SelectItem value="user">User</SelectItem>
+                            <SelectItem value="pending">Pending</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -1612,12 +1709,12 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
   return (
     <Card className="bg-[#141414] border-white/5 p-8 rounded-2xl">
       <div className="space-y-6">
-        <div className="flex items-center justify-between border-b border-white/5 pb-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 gap-4">
           <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest">
             <Users className="w-4 h-4" /> Gestão de Clientes
           </div>
           {isAdmin && (
-            <Button onClick={() => setIsAdding(!isAdding)} variant="ghost" size="sm" className="text-[#00ff88] hover:bg-[#00ff88]/10">
+            <Button onClick={() => setIsAdding(!isAdding)} variant="ghost" size="sm" className="text-[#00ff88] hover:bg-[#00ff88]/10 w-full sm:w-auto">
               {isAdding ? 'Cancelar' : <><Plus className="w-4 h-4 mr-2" /> Novo Cliente</>}
             </Button>
           )}
@@ -1638,7 +1735,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                 <Label className="text-gray-400 text-xs uppercase">CPF/CNPJ</Label>
                 <Input value={formData.cpfCnpj} onChange={e => setFormData({...formData, cpfCnpj: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10" />
               </div>
-              <Button type="submit" className="md:col-span-3 bg-[#00ff88] text-black font-bold h-10">Salvar Cliente</Button>
+              <Button type="submit" className="md:col-span-3 bg-[#00ff88] text-black font-bold h-10 w-full">Salvar Cliente</Button>
             </form>
           </div>
         )}
@@ -1724,19 +1821,19 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
           <h2 className="text-xl sm:text-2xl font-bold">Datacenters</h2>
           <p className="text-gray-500 text-xs sm:text-sm">Gestão de POPs e energia ENEL Ceará</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           {isAdmin && (
             <Button 
               onClick={syncAllEnel} 
               disabled={isSyncingAll}
               variant="outline" 
-              className="border-[#00ff88]/30 text-[#00ff88] hover:bg-[#00ff88]/10 text-xs h-9"
+              className="border-[#00ff88]/30 text-[#00ff88] hover:bg-[#00ff88]/10 text-xs h-9 flex-1 sm:flex-none"
             >
               {isSyncingAll ? <RefreshCw className="w-3 h-3 animate-spin mr-2" /> : <RefreshCw className="w-3 h-3 mr-2" />}
               {isSyncingAll ? 'Sincronizando...' : 'Sincronizar Todos'}
             </Button>
           )}
-          {isAdmin && <NewDatacenterDialog />}
+          {isAdmin && <div className="flex-1 sm:flex-none"><NewDatacenterDialog /></div>}
         </div>
       </div>
 
@@ -1776,7 +1873,10 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
 
   const checkEnelPayment = async () => {
     if (!dc.enelClientId || !dc.enelCpfCnpj) {
-      alert("Número do Cliente e CPF/CNPJ são necessários para a consulta.");
+      const missing = [];
+      if (!dc.enelClientId) missing.push("Número do Cliente");
+      if (!dc.enelCpfCnpj) missing.push("CPF/CNPJ");
+      alert(`As seguintes informações são necessárias para a consulta: ${missing.join(" e ")}. Por favor, edite o card e preencha estes campos.`);
       return;
     }
     setIsCheckingEnel(true);
@@ -1953,6 +2053,7 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
                   <Badge variant="outline" className={`text-[10px] ${
                     dc.enelStatus === 'Pago' ? 'text-[#00ff88] border-[#00ff88]/30' : 
                     dc.enelStatus === 'Vencido' ? 'text-red-500 border-red-500/30' : 
+                    dc.enelStatus === 'Erro de Configuração' ? 'text-orange-500 border-orange-500/30' :
                     'text-yellow-500 border-yellow-500/30'
                   }`}>
                     {dc.enelStatus || 'Não consultado'}
@@ -1966,10 +2067,9 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
               </div>
               <Button 
                 size="sm" 
-                variant="ghost" 
-                disabled={!dc.enelClientId || isCheckingEnel}
+                disabled={isCheckingEnel}
                 onClick={checkEnelPayment}
-                className="h-8 text-[10px] text-[#00ff88] hover:bg-[#00ff88]/10"
+                className="h-9 text-[10px] bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] shadow-[0_0_10px_rgba(0,255,136,0.1)]"
               >
                 {isCheckingEnel ? <Clock className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
                 Consultar
@@ -2009,7 +2109,7 @@ function NewDatacenterDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Adicionar Datacenter</Button>} />
+      <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full"><Plus className="w-4 h-4 mr-2" /> Novo POP</Button>} />
       <DialogContent className="bg-[#141414] border-white/10 text-white max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8">
         <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Novo Datacenter / POP</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
@@ -2095,14 +2195,14 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-2xl font-bold">Estoque NOC</h2>
-          <p className="text-gray-500 text-sm">Controle de materiais e ativos em estoque</p>
+          <h2 className="text-xl sm:text-2xl font-bold">Estoque NOC</h2>
+          <p className="text-gray-500 text-xs sm:text-sm">Controle de materiais e ativos em estoque</p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
           <Select value={filterCategory} onValueChange={setFilterCategory}>
-            <SelectTrigger className="w-[180px] bg-white/5 border-white/10">
+            <SelectTrigger className="w-full sm:w-[180px] bg-white/5 border-white/10 h-9 text-xs">
               <SelectValue placeholder="Filtrar Categoria" />
             </SelectTrigger>
             <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
@@ -2114,7 +2214,7 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
           </Select>
           {isAdmin && (
             <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setEditingItem(null); }}>
-              <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Novo Item</Button>} />
+              <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 flex-1 sm:flex-none"><Plus className="w-4 h-4 mr-2" /> Novo Item</Button>} />
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl p-8">
                 <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">{editingItem ? 'Editar Item' : 'Adicionar ao Estoque'}</DialogTitle></DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6 py-4">
