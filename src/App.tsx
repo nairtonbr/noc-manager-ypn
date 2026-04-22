@@ -2146,25 +2146,7 @@ function DatacenterGrid({ datacenters, isAdmin, customers }: { datacenters: any[
         </div>
       </div>
 
-      {/* Relatório ENEL */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Pagos</p>
-          <p className="text-2xl font-bold text-[#00ff88]">{stats.pago}</p>
-        </Card>
-        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Pendentes</p>
-          <p className="text-2xl font-bold text-yellow-500">{stats.pendente}</p>
-        </Card>
-        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Vencidos</p>
-          <p className="text-2xl font-bold text-red-500">{stats.vencido}</p>
-        </Card>
-        <Card className="bg-[#141414] border-white/5 p-4 flex flex-col items-center justify-center text-center">
-          <p className="text-[10px] text-gray-500 uppercase font-bold mb-1">Não Consultados</p>
-          <p className="text-2xl font-bold text-gray-500">{stats.naoConsultado}</p>
-        </Card>
-      </div>
+      {/* O relatório ENEL foi removido conforme solicitação do usuário */}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {datacenters.map(dc => (
