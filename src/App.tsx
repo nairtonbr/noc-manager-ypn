@@ -365,7 +365,7 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="announcements" className="mt-4 sm:mt-0">
-            <AnnouncementsManager announcements={announcements} isAdmin={isAdmin} settings={settings} />
+            <AnnouncementsManager announcements={announcements} olts={olts} customers={customers} isAdmin={isAdmin} settings={settings} />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-4 sm:mt-0">
@@ -1472,27 +1472,44 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
   );
 }
 
-function AnnouncementsManager({ announcements, isAdmin, settings }: { announcements: any[], isAdmin: boolean, settings: any }) {
+function AnnouncementsManager({ announcements, olts, customers, isAdmin, settings }: { announcements: any[], olts: any[], customers: any[], isAdmin: boolean, settings: any }) {
   const [newMsg, setNewMsg] = useState("");
+  const [targetType, setTargetType] = useState<"all" | "olts" | "customers">("all");
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { user } = useAuth();
   const [isSending, setIsSending] = useState(false);
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newMsg || isSending) return;
+    if (targetType !== "all" && selectedIds.length === 0) {
+      alert("Por favor, selecione pelo menos um destinatário.");
+      return;
+    }
+
     setIsSending(true);
     try {
       await addDoc(collection(db, 'announcements'), {
         text: newMsg,
+        targetType,
+        targetIds: selectedIds,
         createdBy: user?.uid,
         createdAt: new Date().toISOString()
       });
       setNewMsg("");
+      setTargetType("all");
+      setSelectedIds([]);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'announcements');
     } finally {
       setIsSending(false);
     }
+  };
+
+  const toggleId = (id: string) => {
+    setSelectedIds(prev => 
+      prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
+    );
   };
 
   const deleteAnnouncement = async (id: string) => {
@@ -1517,7 +1534,43 @@ function AnnouncementsManager({ announcements, isAdmin, settings }: { announceme
 
       {isAdmin && (
         <Card className="bg-[#141414] border-white/5 p-6 rounded-2xl">
-          <form onSubmit={handleSend} className="space-y-4">
+          <form onSubmit={handleSend} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-gray-400 uppercase text-[10px] font-bold">Destinatários</Label>
+                <Select value={targetType} onValueChange={(v: any) => { setTargetType(v); setSelectedIds([]); }}>
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                    <SelectItem value="all">Toda a Equipe (Geral)</SelectItem>
+                    <SelectItem value="olts">Grupos de OLTs</SelectItem>
+                    <SelectItem value="customers">Clientes Específicos</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {targetType !== "all" && (
+                <div className="space-y-2">
+                  <Label className="text-gray-400 uppercase text-[10px] font-bold">
+                    Selecionar {targetType === "olts" ? "OLTs" : "Clientes"}
+                  </Label>
+                  <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-white/10 rounded-md bg-white/5">
+                    {(targetType === "olts" ? olts : customers).map(item => (
+                      <Badge 
+                        key={item.id}
+                        onClick={() => toggleId(item.id)}
+                        variant={selectedIds.includes(item.id) ? "default" : "outline"}
+                        className={`cursor-pointer transition-all ${selectedIds.includes(item.id) ? 'bg-[#00ff88] text-black hover:bg-[#00cc6e]' : 'text-gray-400 hover:text-white border-white/10'}`}
+                      >
+                        {item.name}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="space-y-2">
               <Label className="text-gray-400 uppercase text-[10px] font-bold">Mensagem do Aviso</Label>
               <Textarea 
@@ -1545,6 +1598,27 @@ function AnnouncementsManager({ announcements, isAdmin, settings }: { announceme
             <Card className="bg-[#141414] border-white/5 p-6 rounded-xl hover:border-white/10 transition-all group">
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
+                  <div className="mb-2">
+                    {ann.targetType === "olts" ? (
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[9px] uppercase">OLTs:</Badge>
+                        {(ann.targetIds || []).map((id: string) => {
+                          const olt = olts.find(o => o.id === id);
+                          return <Badge key={id} variant="outline" className="text-[9px] text-gray-400 border-white/5">{olt?.name || 'OLT Removida'}</Badge>
+                        })}
+                      </div>
+                    ) : ann.targetType === "customers" ? (
+                      <div className="flex flex-wrap gap-1">
+                        <Badge variant="outline" className="bg-purple-500/10 text-purple-400 border-purple-500/20 text-[9px] uppercase">Clientes:</Badge>
+                        {(ann.targetIds || []).map((id: string) => {
+                          const customer = customers.find(c => c.id === id);
+                          return <Badge key={id} variant="outline" className="text-[9px] text-gray-400 border-white/5">{customer?.name || 'Cliente Removido'}</Badge>
+                        })}
+                      </div>
+                    ) : (
+                      <Badge variant="outline" className="bg-[#00ff88]/10 text-[#00ff88] border-[#00ff88]/20 text-[9px] uppercase">Público: Toda a Equipe</Badge>
+                    )}
+                  </div>
                   <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">{ann.text}</p>
                   <p className="text-[10px] text-gray-500 mt-4 flex items-center gap-2">
                     <Clock className="w-3 h-3" />

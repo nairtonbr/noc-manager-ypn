@@ -157,7 +157,9 @@
       "properties": {
         "text": { "type": "string" },
         "createdBy": { "type": "string" },
-        "createdAt": { "type": "string", "format": "date-time" }
+        "createdAt": { "type": "string", "format": "date-time" },
+        "targetType": { "type": "string", "enum": ["all", "olts", "customers"] },
+        "targetIds": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["text", "createdBy", "createdAt"]
     },
