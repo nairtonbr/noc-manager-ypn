@@ -4,6 +4,8 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { 
   LayoutDashboard, 
+  LayoutGrid,
+  List,
   Server, 
   Globe, 
   Network, 
@@ -1867,23 +1869,52 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
 function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: boolean }) {
   const [formData, setFormData] = useState({ name: '', address: '', cpfCnpj: '', groupId: '' });
   const [isAdding, setIsAdding] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
-  const handleAdd = async (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name.trim()) return;
     try {
-      await addDoc(collection(db, 'customers'), {
+      const data = {
         name: formData.name.toUpperCase(),
         address: formData.address.toUpperCase(),
         cpfCnpj: formData.cpfCnpj.toUpperCase(),
         groupId: formData.groupId.toUpperCase(),
-        createdAt: serverTimestamp()
-      });
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingId) {
+        await updateDoc(doc(db, 'customers', editingId), data);
+      } else {
+        await addDoc(collection(db, 'customers'), {
+          ...data,
+          createdAt: serverTimestamp()
+        });
+      }
       setFormData({ name: '', address: '', cpfCnpj: '', groupId: '' });
       setIsAdding(false);
+      setEditingId(null);
     } catch (err) {
-      handleFirestoreError(err, OperationType.CREATE, 'customers');
+      handleFirestoreError(err, editingId ? OperationType.UPDATE : OperationType.CREATE, editingId ? `customers/${editingId}` : 'customers');
     }
+  };
+
+  const startEdit = (customer: any) => {
+    setFormData({
+      name: customer.name || '',
+      address: customer.address || '',
+      cpfCnpj: customer.cpfCnpj || '',
+      groupId: customer.groupId || ''
+    });
+    setEditingId(customer.id);
+    setIsAdding(true);
+  };
+
+  const cancelAction = () => {
+    setIsAdding(false);
+    setEditingId(null);
+    setFormData({ name: '', address: '', cpfCnpj: '', groupId: '' });
   };
 
   const handleDelete = async (id: string) => {
@@ -1901,11 +1932,31 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
     <Card className="bg-[#141414] border-white/5 p-8 rounded-2xl">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-white/5 pb-3 gap-4">
-          <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest">
-            <Users className="w-4 h-4" /> Gestão de Clientes
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-3 text-[#00ff88] text-xs font-bold uppercase tracking-widest">
+              <Users className="w-4 h-4" /> Gestão de Clientes
+            </div>
+            <div className="flex bg-black/40 p-1 rounded-lg border border-white/5">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setViewMode('grid')}
+                className={`h-7 px-3 text-[10px] uppercase font-bold transition-all ${viewMode === 'grid' ? 'bg-[#00ff88] text-black hover:bg-[#00ff88]' : 'text-gray-500'}`}
+              >
+                <LayoutGrid className="w-3 h-3 mr-1.5" /> Grade
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setViewMode('list')}
+                className={`h-7 px-3 text-[10px] uppercase font-bold transition-all ${viewMode === 'list' ? 'bg-[#00ff88] text-black hover:bg-[#00ff88]' : 'text-gray-500'}`}
+              >
+                <List className="w-3 h-3 mr-1.5" /> Lista
+              </Button>
+            </div>
           </div>
           {isAdmin && (
-            <Button onClick={() => setIsAdding(!isAdding)} variant="ghost" size="sm" className="text-[#00ff88] hover:bg-[#00ff88]/10 w-full sm:w-auto">
+            <Button onClick={() => isAdding ? cancelAction() : setIsAdding(true)} variant="ghost" size="sm" className="text-[#00ff88] hover:bg-[#00ff88]/10 w-full sm:w-auto">
               {isAdding ? 'Cancelar' : <><Plus className="w-4 h-4 mr-2" /> Novo Cliente</>}
             </Button>
           )}
@@ -1913,7 +1964,11 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
 
         {isAdding && (
           <div className="bg-white/5 border border-white/10 p-6 rounded-xl space-y-4">
-            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex items-center gap-2 text-[#00ff88] text-[10px] font-bold uppercase mb-2">
+              {editingId ? <Edit2 className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
+              {editingId ? 'Editar Cliente' : 'Cadastrar Novo Cliente'}
+            </div>
+            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">Nome</Label>
                 <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" required />
@@ -1930,35 +1985,91 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                 <Label className="text-gray-400 text-xs uppercase">Nº/ID Grupo</Label>
                 <Input value={formData.groupId} onChange={e => setFormData({...formData, groupId: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" placeholder="EX: G01" />
               </div>
-              <Button type="submit" className="md:col-span-4 bg-[#00ff88] text-black font-bold h-10 w-full">Salvar Cliente</Button>
+              <Button type="submit" className="md:col-span-4 bg-[#00ff88] text-black font-bold h-10 w-full">
+                {editingId ? 'Salvar Edição' : 'Salvar Cliente'}
+              </Button>
             </form>
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
-          {customers.map(customer => (
-            <div key={customer.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group gap-4">
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-200 truncate flex items-center gap-2">
-                  {customer.name}
-                  {customer.groupId && <Badge variant="outline" className="text-[8px] border-[#00ff88]/30 text-[#00ff88] py-0 h-4">GRUPO: {customer.groupId}</Badge>}
-                </p>
-                <p className="text-[10px] text-gray-500 uppercase truncate">{customer.address || 'SEM ENDEREÇO'}</p>
-                <p className="text-[10px] text-gray-600 font-mono">{customer.cpfCnpj || 'SEM CPF/CNPJ'}</p>
+        {viewMode === 'grid' ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
+            {customers.map(customer => (
+              <div key={customer.id} className="flex flex-col p-4 bg-white/5 rounded-xl border border-white/5 group gap-4 relative overflow-hidden">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-gray-200 truncate flex items-center gap-2">
+                    {customer.name}
+                    {customer.groupId && <Badge variant="outline" className="text-[8px] border-[#00ff88]/30 text-[#00ff88] py-0 h-4 shrink-0">GRUPO: {customer.groupId}</Badge>}
+                  </p>
+                  <p className="text-[10px] text-gray-400 uppercase truncate mt-1">{customer.address || 'SEM ENDEREÇO'}</p>
+                  <p className="text-[10px] text-gray-500 font-mono mt-0.5">{customer.cpfCnpj || 'SEM CPF/CNPJ'}</p>
+                </div>
+                {isAdmin && (
+                  <div className="flex gap-1 justify-end pt-3 border-t border-white/5 sm:opacity-0 group-hover:opacity-100 transition-all">
+                    <Button variant="ghost" size="icon" onClick={() => startEdit(customer)} className="text-gray-500 hover:text-[#00ff88] shrink-0 h-8 w-8">
+                      <Edit2 className="w-3.5 h-3.5" />
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id)} className="text-gray-500 hover:text-red-500 transition-all shrink-0 h-8 w-8">
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </Button>
+                  </div>
+                )}
               </div>
-              {isAdmin && (
-                <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id)} className="sm:opacity-0 group-hover:opacity-100 text-gray-500 hover:text-red-500 transition-all shrink-0">
-                  <Trash2 className="w-4 h-4" />
-                </Button>
-              )}
-            </div>
-          ))}
-          {customers.length === 0 && (
-            <div className="col-span-full py-12 text-center text-gray-600 border border-dashed border-white/5 rounded-xl">
-              Nenhum cliente cadastrado.
-            </div>
-          )}
-        </div>
+            ))}
+            {customers.length === 0 && (
+              <div className="col-span-full py-12 text-center text-gray-600 border border-dashed border-white/5 rounded-xl">
+                Nenhum cliente cadastrado.
+              </div>
+            )}
+          </div>
+        ) : (
+          <div className="bg-white/5 border border-white/5 rounded-xl overflow-hidden">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-black/20 border-b border-white/5">
+                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Nome</th>
+                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Endereço</th>
+                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">CPF/CNPJ</th>
+                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Grupo</th>
+                  {isAdmin && <th className="p-4 text-[10px] font-bold uppercase text-gray-500 text-right">Ações</th>}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-white/5">
+                {customers.map(customer => (
+                  <tr key={customer.id} className="hover:bg-white/5 transition-colors group">
+                    <td className="p-4">
+                      <div className="text-xs font-bold text-[#00ff88]">{customer.name}</div>
+                    </td>
+                    <td className="p-4">
+                      <div className="text-[10px] text-gray-400 uppercase truncate max-w-[200px]">{customer.address || '-'}</div>
+                    </td>
+                    <td className="p-4 text-[10px] text-gray-500 font-mono">{customer.cpfCnpj || '-'}</td>
+                    <td className="p-4 text-[10px] text-gray-400">{customer.groupId || '-'}</td>
+                    {isAdmin && (
+                      <td className="p-4">
+                        <div className="flex gap-2 justify-end">
+                          <Button variant="ghost" size="icon" onClick={() => startEdit(customer)} className="text-gray-500 hover:text-[#00ff88] h-8 w-8">
+                            <Edit2 className="w-3 h-3" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(customer.id)} className="text-gray-500 hover:text-red-500 h-8 w-8">
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                ))}
+                {customers.length === 0 && (
+                  <tr>
+                    <td colSpan={isAdmin ? 5 : 4} className="p-12 text-center text-gray-600">
+                      Nenhum cliente cadastrado.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
     </Card>
   );
