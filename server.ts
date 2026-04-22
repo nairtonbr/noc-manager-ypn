@@ -114,9 +114,21 @@ async function startServer() {
 
     try {
       let formattedPhone = phone.replace(/\D/g, "");
-      // Add country code 55 if missing (assuming Brazil)
+      
+      // Intelligent formatting:
+      // 1. If it looks like a group ID (very long string of digits), keep it as is.
+      // 2. If it's a standard mobile/landline without country code, add 55.
       if (formattedPhone.length >= 10 && formattedPhone.length <= 11) {
+        // Standard Brazil phone (10 or 11 digits)
         formattedPhone = "55" + formattedPhone;
+      } else if (formattedPhone.length > 15) {
+        // Most likely a Group ID - Evolution API handles this as is or needs @g.us
+        // We'll keep the digits but many APIs expect group_id@g.us
+        if (!phone.includes("@")) {
+          formattedPhone = formattedPhone + "@g.us";
+        } else {
+          formattedPhone = phone; // use original if it has @ (like @g.us or @s.whatsapp.net)
+        }
       }
 
       const endpoint = imageUrl ? "sendMedia" : "sendText";

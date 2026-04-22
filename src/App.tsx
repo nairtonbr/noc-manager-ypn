@@ -1537,30 +1537,33 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
         } else if (targetType === "datacenters") {
           const targetDatacenters = datacenters.filter(d => selectedIds.includes(d.id));
           const customerIds = new Set<string>();
+          const groupCodes = new Set<string>();
           
           targetDatacenters.forEach(d => {
             const dcCustomers = d.customers || [];
             console.log(`Analisando Datacenter: ${d.name} (${dcCustomers.length} clientes vinculados)`);
             dcCustomers.forEach((c: any) => {
               if (typeof c === 'string') customerIds.add(c);
-              else if (c && c.customerId) customerIds.add(c.customerId);
+              else if (c && c.customerId) {
+                customerIds.add(c.customerId);
+                if (c.groupCode) groupCodes.add(c.groupCode);
+              }
             });
           });
           
-          console.log(`Total de IDs únicos de clientes encontrados: ${customerIds.size}`);
+          console.log(`Clientes únicos: ${customerIds.size}, Grupos únicos: ${groupCodes.size}`);
           
-          targets = Array.from(new Set(customers
+          const customerPhones = customers
             .filter(c => customerIds.has(c.id))
-            .map(c => {
-              if (!c.phone) console.warn(`Cliente ${c.name} está vinculado mas não possui telefone cadastrado.`);
-              return c.phone;
-            })
-            .filter(Boolean)));
+            .map(c => c.phone)
+            .filter(Boolean);
 
-          console.log(`Total de telefones válidos para envio: ${targets.length}`);
+          targets = Array.from(new Set([...customerPhones, ...Array.from(groupCodes)]));
+
+          console.log(`Total de alvos (telefones + grupos) para envio: ${targets.length}`);
 
           if (targets.length === 0) {
-            alert(`Nenhum telefone encontrado para os datacenters: ${targetDatacenters.map(d => d.name).join(", ")}. Verifique se os clientes vinculados possuem o campo WhatsApp preenchido.`);
+            alert(`Nenhum telefone ou grupo encontrado para os datacenters: ${targetDatacenters.map(d => d.name).join(", ")}.`);
             setIsSending(false);
             return;
           }
