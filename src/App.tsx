@@ -1496,16 +1496,16 @@ const MESSAGE_TEMPLATES = [
     title: "Rompimento",
     text: `⚠️ AVISO DE INCIDENTE – ROMPIMENTO DE CABO ÓPTICO
 
-Informamos que foi identificado um rompimento de cabo óptico em nossa infraestrutura, impactando parcialmente os serviços de conectividade na região de Pacatuba e Guaiuba.
+Informamos que foi identificado um rompimento de cabo óptico em nossa infraestrutura, impactando parcialmente os serviços de conectividade na região de [REGIÕES AFETADAS].
 
 🔍 Causa:
-Rompimento físico de fibra óptica devido a um poste em chamas na localização: -3.985135572006407, -38.61918637515611.
+Rompimento físico de fibra óptica (em análise – possível intervenção externa/obra civil).
 
 🛠️ Ações em andamento:
 Nossa equipe técnica já está atuando no local para normalização, realizando identificação do ponto exato e execução dos reparos necessários.
 
 ⏱️ SLA estimado para normalização:
-Previsão inicial de até 06 horas [20h - 22/04], podendo variar conforme complexidade do reparo e condições do local.
+Previsão inicial de até 06 horas [HORA ESTIMADA], podendo variar conforme complexidade do reparo e condições do local.
 
 🔄 Próxima atualização:
 Uma nova atualização será fornecida em até 01 hora, ou assim que houver avanço relevante no cenário.
@@ -1599,8 +1599,8 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
     console.log("IDs selecionados:", selectedIds);
 
     try {
-      // Salvar o aviso no Firestore SEM a imagem
-      await addDoc(collection(db, 'announcements'), {
+      // Salvar o aviso no Firestore SEM a imagem, sempre sobrescrevendo o último
+      await setDoc(doc(db, 'announcements', 'latest'), {
         text: newMsg,
         targetType,
         targetIds: selectedIds,
@@ -1738,18 +1738,29 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                     <Label className="text-gray-400 uppercase text-[10px] font-bold">
                       Selecionar {targetType === "datacenters" ? "Datacenters" : "Clientes"}
                     </Label>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => {
-                        const allIds = (targetType === "datacenters" ? datacenters : customers).map(i => i.id);
-                        setSelectedIds(allIds);
-                      }}
-                      className="h-auto py-0 px-2 text-[10px] text-[#00ff88] hover:text-[#00cc6e] hover:bg-[#00ff88]/10"
-                    >
-                      Selecionar todos
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => {
+                          const allIds = (targetType === "datacenters" ? datacenters : customers).map(i => i.id);
+                          setSelectedIds(allIds);
+                        }}
+                        className="h-auto py-0 px-2 text-[10px] text-[#00ff88] hover:text-[#00cc6e] hover:bg-[#00ff88]/10"
+                      >
+                        Selecionar todos
+                      </Button>
+                      <Button 
+                        type="button" 
+                        variant="ghost" 
+                        size="sm" 
+                        onClick={() => setSelectedIds([])}
+                        className="h-auto py-0 px-2 text-[10px] text-red-500 hover:text-red-400 hover:bg-red-500/10"
+                      >
+                        Limpar seleção
+                      </Button>
+                    </div>
                   </div>
                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-white/10 rounded-md bg-white/5">
                     {(targetType === "datacenters" ? datacenters : customers).map(item => (
