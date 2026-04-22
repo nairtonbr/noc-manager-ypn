@@ -62,7 +62,6 @@ function Dashboard() {
   const [customers, setCustomers] = useState<any[]>([]);
   const [settings, setSettings] = useState<any | null>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [olts, setOlts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("assets");
 
@@ -133,11 +132,6 @@ function Dashboard() {
       setAnnouncements(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (err) => handleFirestoreError(err, OperationType.LIST, 'announcements'));
 
-    const qOlts = query(collection(db, 'olts'), orderBy('name', 'asc'));
-    const unsubOlts = onSnapshot(qOlts, (snapshot) => {
-      setOlts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-    }, (err) => handleFirestoreError(err, OperationType.LIST, 'olts'));
-
     const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), (docSnap) => {
       if (docSnap.exists()) {
         setSettings({ id: docSnap.id, ...docSnap.data() });
@@ -162,7 +156,6 @@ function Dashboard() {
       unsubTasks();
       unsubCustomers();
       unsubAnnouncements();
-      unsubOlts();
       unsubSettings();
       unsubUsers();
     };
@@ -357,7 +350,7 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="datacenters" className="mt-4 sm:mt-0">
-            <DatacenterGrid datacenters={datacenters} isAdmin={isAdmin} />
+            <DatacenterGrid datacenters={datacenters} isAdmin={isAdmin} customers={customers} />
           </TabsContent>
           
           <TabsContent value="stock" className="mt-4 sm:mt-0">
@@ -365,11 +358,11 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="announcements" className="mt-4 sm:mt-0">
-            <AnnouncementsManager announcements={announcements} olts={olts} customers={customers} isAdmin={isAdmin} settings={settings} />
+            <AnnouncementsManager announcements={announcements} datacenters={datacenters} customers={customers} isAdmin={isAdmin} settings={settings} />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-4 sm:mt-0">
-            <SettingsManager settings={settings} users={users} customers={customers} olts={olts} isAdmin={isAdmin} />
+            <SettingsManager settings={settings} users={users} customers={customers} isAdmin={isAdmin} />
           </TabsContent>
         </Tabs>
       </main>
@@ -1472,9 +1465,9 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
   );
 }
 
-function AnnouncementsManager({ announcements, olts, customers, isAdmin, settings }: { announcements: any[], olts: any[], customers: any[], isAdmin: boolean, settings: any }) {
+function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, settings }: { announcements: any[], datacenters: any[], customers: any[], isAdmin: boolean, settings: any }) {
   const [newMsg, setNewMsg] = useState("");
-  const [targetType, setTargetType] = useState<"all" | "olts" | "customers">("all");
+  const [targetType, setTargetType] = useState<"all" | "datacenters" | "customers">("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { user } = useAuth();
   const [isSending, setIsSending] = useState(false);
@@ -1544,7 +1537,7 @@ function AnnouncementsManager({ announcements, olts, customers, isAdmin, setting
                   </SelectTrigger>
                   <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
                     <SelectItem value="all">Toda a Equipe (Geral)</SelectItem>
-                    <SelectItem value="olts">Grupos de OLTs</SelectItem>
+                    <SelectItem value="datacenters">Datacenters</SelectItem>
                     <SelectItem value="customers">Clientes Específicos</SelectItem>
                   </SelectContent>
                 </Select>
@@ -1553,10 +1546,10 @@ function AnnouncementsManager({ announcements, olts, customers, isAdmin, setting
               {targetType !== "all" && (
                 <div className="space-y-2">
                   <Label className="text-gray-400 uppercase text-[10px] font-bold">
-                    Selecionar {targetType === "olts" ? "OLTs" : "Clientes"}
+                    Selecionar {targetType === "datacenters" ? "Datacenters" : "Clientes"}
                   </Label>
                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-white/10 rounded-md bg-white/5">
-                    {(targetType === "olts" ? olts : customers).map(item => (
+                    {(targetType === "datacenters" ? datacenters : customers).map(item => (
                       <Badge 
                         key={item.id}
                         onClick={() => toggleId(item.id)}
@@ -1599,12 +1592,12 @@ function AnnouncementsManager({ announcements, olts, customers, isAdmin, setting
               <div className="flex justify-between items-start gap-4">
                 <div className="flex-1">
                   <div className="mb-2">
-                    {ann.targetType === "olts" ? (
+                    {ann.targetType === "datacenters" ? (
                       <div className="flex flex-wrap gap-1">
-                        <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[9px] uppercase">OLTs:</Badge>
+                        <Badge variant="outline" className="bg-blue-500/10 text-blue-400 border-blue-500/20 text-[9px] uppercase">Datacenters:</Badge>
                         {(ann.targetIds || []).map((id: string) => {
-                          const olt = olts.find(o => o.id === id);
-                          return <Badge key={id} variant="outline" className="text-[9px] text-gray-400 border-white/5">{olt?.name || 'OLT Removida'}</Badge>
+                          const dc = datacenters.find(d => d.id === id);
+                          return <Badge key={id} variant="outline" className="text-[9px] text-gray-400 border-white/5">{dc?.name || 'Datacenter Removido'}</Badge>
                         })}
                       </div>
                     ) : ann.targetType === "customers" ? (
@@ -1643,173 +1636,8 @@ function AnnouncementsManager({ announcements, olts, customers, isAdmin, setting
     </div>
   );
 }
-
-function OLTManager({ olts, customers, isAdmin }: { olts: any[], customers: any[], isAdmin: boolean }) {
-  const [isOLTDialogOpen, setIsOLTDialogOpen] = useState(false);
-  const [editingOLT, setEditingOLT] = useState<any>(null);
-  const [newOLTName, setNewOLTName] = useState("");
-  const [newOLTDesc, setNewOLTDesc] = useState("");
   
-  const [selectedCustomerId, setSelectedCustomerId] = useState("");
-  const [groupCode, setGroupCode] = useState("");
-
-  const handleSaveOLT = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newOLTName) return;
-    try {
-      const data = {
-        name: newOLTName,
-        description: newOLTDesc,
-        customers: editingOLT ? editingOLT.customers : []
-      };
-      if (editingOLT) {
-        await updateDoc(doc(db, 'olts', editingOLT.id), data);
-      } else {
-        await addDoc(collection(db, 'olts'), data);
-      }
-      setNewOLTName("");
-      setNewOLTDesc("");
-      setEditingOLT(null);
-      setIsOLTDialogOpen(false);
-    } catch (err) {
-      handleFirestoreError(err, OperationType.WRITE, 'olts');
-    }
-  };
-
-  const addCustomerToOLT = async (olt: any) => {
-    if (!selectedCustomerId || !isAdmin) return;
-    try {
-      const currentCustomers = olt.customers || [];
-      if (currentCustomers.some((c: any) => c.customerId === selectedCustomerId)) {
-        alert("Cliente já adicionado a esta OLT.");
-        return;
-      }
-      const updatedCustomers = [...currentCustomers, { customerId: selectedCustomerId, groupCode }];
-      await updateDoc(doc(db, 'olts', olt.id), { customers: updatedCustomers });
-      setSelectedCustomerId("");
-      setGroupCode("");
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `olts/${olt.id}`);
-    }
-  };
-
-  const removeCustomerFromOLT = async (olt: any, customerId: string) => {
-    if (!isAdmin) return;
-    try {
-      const updatedCustomers = (olt.customers || []).filter((c: any) => c.customerId !== customerId);
-      await updateDoc(doc(db, 'olts', olt.id), { customers: updatedCustomers });
-    } catch (err) {
-      handleFirestoreError(err, OperationType.UPDATE, `olts/${olt.id}`);
-    }
-  };
-
-  const deleteOLT = async (id: string) => {
-    if (!isAdmin) return;
-    if (confirm("Excluir esta OLT?")) {
-      try {
-        await deleteDoc(doc(db, 'olts', id));
-      } catch (err) {
-        handleFirestoreError(err, OperationType.DELETE, `olts/${id}`);
-      }
-    }
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h3 className="text-xl font-bold flex items-center gap-2 text-[#00ff88]">
-          <Radio className="w-5 h-5" /> Gerenciamento de OLTs
-        </h3>
-        {isAdmin && (
-          <Dialog open={isOLTDialogOpen} onOpenChange={(v) => { setIsOLTDialogOpen(v); if(!v) {setEditingOLT(null); setNewOLTName(""); setNewOLTDesc("");} }}>
-            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold h-9 px-4 text-xs hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Nova OLT</Button>} />
-            <DialogContent className="bg-[#141414] border-white/10 text-white p-8">
-              <DialogHeader><DialogTitle className="text-2xl font-bold text-[#00ff88]">{editingOLT ? 'Editar OLT' : 'Nova OLT'}</DialogTitle></DialogHeader>
-              <form onSubmit={handleSaveOLT} className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <Label>Nome da OLT</Label>
-                  <Input value={newOLTName} onChange={e => setNewOLTName(e.target.value)} className="bg-white/5 border-white/10 h-12" placeholder="Ex: OLT Pacatuba 01" />
-                </div>
-                <div className="space-y-2">
-                  <Label>Descrição / Localização</Label>
-                  <Input value={newOLTDesc} onChange={e => setNewOLTDesc(e.target.value)} className="bg-white/5 border-white/10 h-12" placeholder="Ex: Rack 02 - Sala Técnica" />
-                </div>
-                <Button type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 mt-4">{editingOLT ? 'Salvar Alterações' : 'Criar OLT'}</Button>
-              </form>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 gap-6">
-        {olts.map(olt => (
-          <Card key={olt.id} className="bg-[#141414] border-white/5 p-6 rounded-2xl">
-            <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
-              <div>
-                <h4 className="text-lg font-bold text-white">{olt.name}</h4>
-                <p className="text-sm text-gray-500">{olt.description || 'Sem descrição'}</p>
-              </div>
-              {isAdmin && (
-                <div className="flex gap-2">
-                  <Button variant="ghost" size="icon" onClick={() => { setEditingOLT(olt); setNewOLTName(olt.name); setNewOLTDesc(olt.description || ""); setIsOLTDialogOpen(true); }} className="w-8 h-8 text-gray-500 hover:text-[#00ff88]"><Edit2 className="w-4 h-4" /></Button>
-                  <Button variant="ghost" size="icon" onClick={() => deleteOLT(olt.id)} className="w-8 h-8 text-gray-500 hover:text-red-500"><Trash className="w-4 h-4" /></Button>
-                </div>
-              )}
-            </div>
-
-            <div className="space-y-4">
-              <div className="flex items-center gap-3 text-xs font-bold text-gray-400 uppercase tracking-widest px-2">
-                <Users className="w-4 h-4" /> Clientes na OLT
-              </div>
-              
-              {isAdmin && (
-                <div className="flex flex-col sm:flex-row gap-3 bg-white/5 p-4 rounded-xl border border-white/5">
-                  <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                    <SelectTrigger className="flex-1 bg-black/20 border-white/10 h-10"><SelectValue placeholder="Selecionar Cliente" /></SelectTrigger>
-                    <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                      {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                  <Input value={groupCode} onChange={e => setGroupCode(e.target.value)} placeholder="Nº ou Código do Grupo" className="w-full sm:w-48 bg-black/20 border-white/10 h-10 text-xs" />
-                  <Button onClick={() => addCustomerToOLT(olt)} className="bg-[#00ff88] text-black font-bold h-10 px-6 sm:w-auto w-full"><Plus className="w-4 h-4 mr-2" /> Add</Button>
-                </div>
-              )}
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {(olt.customers || []).map((oc: any) => {
-                  const customer = customers.find(c => c.id === oc.customerId);
-                  return (
-                    <div key={oc.customerId} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 group/cust">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-bold text-white truncate">{customer?.name || 'Cliente Removido'}</span>
-                        <span className="text-[10px] text-gray-500 bg-black/40 px-1.5 py-0.5 rounded w-fit mt-1">Grupo: {oc.groupCode || '-'}</span>
-                      </div>
-                      {isAdmin && (
-                        <Button variant="ghost" size="icon" onClick={() => removeCustomerFromOLT(olt, oc.customerId)} className="w-6 h-6 text-gray-600 hover:text-red-500 opacity-0 group-hover/cust:opacity-100 transition-all"><Trash className="w-3 h-3" /></Button>
-                      )}
-                    </div>
-                  );
-                })}
-                {(olt.customers || []).length === 0 && (
-                  <div className="col-span-full py-6 text-center text-gray-600 text-[10px] bg-white/5 rounded-lg border border-dashed border-white/10 uppercase tracking-widest">
-                    Nenhum cliente vinculado a esta OLT
-                  </div>
-                )}
-              </div>
-            </div>
-          </Card>
-        ))}
-        {olts.length === 0 && (
-          <div className="text-center py-20 text-gray-600 border border-dashed border-white/5 rounded-2xl">
-            Nenhuma OLT cadastrada.
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SettingsManager({ settings, users, customers, olts, isAdmin }: { settings: any | null, users: any[], customers: any[], olts: any[], isAdmin: boolean }) {
+function SettingsManager({ settings, users, customers, isAdmin }: { settings: any | null, users: any[], customers: any[], isAdmin: boolean }) {
   const [formData, setFormData] = useState({
     evolutionWebUrl: "",
     evolutionWebApiKey: "",
@@ -1877,9 +1705,6 @@ function SettingsManager({ settings, users, customers, olts, isAdmin }: { settin
           )}
           <TabsTrigger value="customers" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
             Clientes
-          </TabsTrigger>
-          <TabsTrigger value="olts" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
-            OLTs
           </TabsTrigger>
           <TabsTrigger value="general" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
             Geral
@@ -2029,10 +1854,6 @@ function SettingsManager({ settings, users, customers, olts, isAdmin }: { settin
           <CustomerManager customers={customers} isAdmin={isAdmin} />
         </TabsContent>
 
-        <TabsContent value="olts">
-          <OLTManager olts={olts} customers={customers} isAdmin={isAdmin} />
-        </TabsContent>
-
         <TabsContent value="general">
           <Card className="bg-[#141414] border-white/5 p-12 rounded-2xl text-center">
             <p className="text-gray-500">Configurações gerais em desenvolvimento...</p>
@@ -2044,7 +1865,7 @@ function SettingsManager({ settings, users, customers, olts, isAdmin }: { settin
 }
 
 function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: boolean }) {
-  const [formData, setFormData] = useState({ name: '', address: '', cpfCnpj: '' });
+  const [formData, setFormData] = useState({ name: '', address: '', cpfCnpj: '', groupId: '' });
   const [isAdding, setIsAdding] = useState(false);
 
   const handleAdd = async (e: React.FormEvent) => {
@@ -2055,9 +1876,10 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
         name: formData.name.toUpperCase(),
         address: formData.address.toUpperCase(),
         cpfCnpj: formData.cpfCnpj.toUpperCase(),
+        groupId: formData.groupId.toUpperCase(),
         createdAt: serverTimestamp()
       });
-      setFormData({ name: '', address: '', cpfCnpj: '' });
+      setFormData({ name: '', address: '', cpfCnpj: '', groupId: '' });
       setIsAdding(false);
     } catch (err) {
       handleFirestoreError(err, OperationType.CREATE, 'customers');
@@ -2091,20 +1913,24 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
 
         {isAdding && (
           <div className="bg-white/5 border border-white/10 p-6 rounded-xl space-y-4">
-            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <form onSubmit={handleAdd} className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">Nome</Label>
-                <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10" required />
+                <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" required />
               </div>
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">Endereço</Label>
-                <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10" />
+                <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" />
               </div>
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">CPF/CNPJ</Label>
-                <Input value={formData.cpfCnpj} onChange={e => setFormData({...formData, cpfCnpj: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10" />
+                <Input value={formData.cpfCnpj} onChange={e => setFormData({...formData, cpfCnpj: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" />
               </div>
-              <Button type="submit" className="md:col-span-3 bg-[#00ff88] text-black font-bold h-10 w-full">Salvar Cliente</Button>
+              <div className="space-y-2">
+                <Label className="text-gray-400 text-xs uppercase">Nº/ID Grupo</Label>
+                <Input value={formData.groupId} onChange={e => setFormData({...formData, groupId: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" placeholder="EX: G01" />
+              </div>
+              <Button type="submit" className="md:col-span-4 bg-[#00ff88] text-black font-bold h-10 w-full">Salvar Cliente</Button>
             </form>
           </div>
         )}
@@ -2113,7 +1939,10 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
           {customers.map(customer => (
             <div key={customer.id} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white/5 rounded-xl border border-white/5 group gap-4">
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-200 truncate">{customer.name}</p>
+                <p className="text-sm font-bold text-gray-200 truncate flex items-center gap-2">
+                  {customer.name}
+                  {customer.groupId && <Badge variant="outline" className="text-[8px] border-[#00ff88]/30 text-[#00ff88] py-0 h-4">GRUPO: {customer.groupId}</Badge>}
+                </p>
                 <p className="text-[10px] text-gray-500 uppercase truncate">{customer.address || 'SEM ENDEREÇO'}</p>
                 <p className="text-[10px] text-gray-600 font-mono">{customer.cpfCnpj || 'SEM CPF/CNPJ'}</p>
               </div>
@@ -2135,7 +1964,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
   );
 }
 
-function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin: boolean }) {
+function DatacenterGrid({ datacenters, isAdmin, customers }: { datacenters: any[], isAdmin: boolean, customers: any[] }) {
   const [isSyncingAll, setIsSyncingAll] = useState(false);
   
   const stats = {
@@ -2228,17 +2057,19 @@ function DatacenterGrid({ datacenters, isAdmin }: { datacenters: any[], isAdmin:
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-4">
         {datacenters.map(dc => (
-          <DatacenterCard key={dc.id} dc={dc} isAdmin={isAdmin} />
+          <DatacenterCard key={dc.id} dc={dc} isAdmin={isAdmin} customers={customers} />
         ))}
       </div>
     </div>
   );
 }
 
-function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
+function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean, customers: any[] }) {
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({ ...dc });
   const [isCheckingEnel, setIsCheckingEnel] = useState(false);
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [groupCode, setGroupCode] = useState("");
 
   const checkEnelPayment = async () => {
     if (!dc.enelClientId || !dc.enelCpfCnpj) {
@@ -2298,8 +2129,35 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
     }
   };
 
+  const addCustomerToDatacenter = async () => {
+    if (!selectedCustomerId || !isAdmin) return;
+    try {
+      const currentCustomers = dc.customers || [];
+      if (currentCustomers.some((c: any) => c.customerId === selectedCustomerId)) {
+        alert("Cliente já associado a este datacenter.");
+        return;
+      }
+      const updatedCustomers = [...currentCustomers, { customerId: selectedCustomerId, groupCode }];
+      await updateDoc(doc(db, 'datacenters', dc.id), { customers: updatedCustomers });
+      setSelectedCustomerId("");
+      setGroupCode("");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `datacenters/${dc.id}`);
+    }
+  };
+
+  const removeCustomerFromDatacenter = async (customerId: string) => {
+    if (!isAdmin) return;
+    try {
+      const updatedCustomers = (dc.customers || []).filter((c: any) => c.customerId !== customerId);
+      await updateDoc(doc(db, 'datacenters', dc.id), { customers: updatedCustomers });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `datacenters/${dc.id}`);
+    }
+  };
+
   return (
-    <Card className="bg-[#141414] border-white/5 hover:border-[#00ff88]/30 transition-all">
+    <Card className="bg-[#141414] border-white/5 hover:border-[#00ff88]/30 transition-all flex flex-col h-full">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-500/10 rounded-lg flex items-center justify-center text-blue-500">
@@ -2315,7 +2173,7 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
         {isAdmin && (
           <div className="flex gap-1">
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
-              <DialogTrigger render={<Button variant="ghost" size="icon" className="w-7 h-7 text-gray-500"><Edit2 className="w-3 h-3" /></Button>} />
+              <DialogTrigger render={<Button variant="ghost" size="icon" className="w-7 h-7 text-gray-500 hover:text-white"><Edit2 className="w-3 h-3" /></Button>} />
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8">
                 <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Editar Datacenter</DialogTitle></DialogHeader>
                 <div className="grid gap-6 py-4">
@@ -2380,7 +2238,7 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
           </div>
         )}
       </CardHeader>
-      <CardContent className="pt-4 space-y-4">
+      <CardContent className="pt-4 space-y-4 flex-grow">
         <Badge className={`${dc.type === 'Próprio' ? 'bg-[#00ff88] text-black' : 'bg-blue-500'} text-[10px]`}>
           {dc.type}
         </Badge>
@@ -2398,20 +2256,6 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
               <p className="text-[9px] text-gray-500 uppercase font-bold">CPF/CNPJ ENEL</p>
               <p className="text-xs text-gray-300 font-mono">{dc.enelCpfCnpj || '-'}</p>
             </div>
-          </div>
-          <div className="grid grid-cols-2 gap-4 pt-2 border-t border-white/5">
-            <div>
-              <p className="text-[9px] text-gray-500 uppercase font-bold">Titular ENEL</p>
-              <p className="text-xs text-gray-300">{dc.enelOwnerName || '-'}</p>
-            </div>
-            <div>
-              <p className="text-[9px] text-gray-500 uppercase font-bold">CPF do Titular</p>
-              <p className="text-xs text-gray-300 font-mono">{dc.enelOwnerCpf || '-'}</p>
-            </div>
-          </div>
-          <div className="pt-2 border-t border-white/5">
-            <p className="text-[9px] text-gray-500 uppercase font-bold">Última Limpeza</p>
-            <p className="text-xs text-gray-300">{dc.lastCleaning ? new Date(dc.lastCleaning).toLocaleDateString() : '-'}</p>
           </div>
 
           <div className="pt-4 border-t border-white/5 space-y-3">
@@ -2438,20 +2282,60 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
                 size="sm" 
                 disabled={isCheckingEnel}
                 onClick={checkEnelPayment}
-                className="h-9 text-[10px] bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] shadow-[0_0_10px_rgba(0,255,136,0.1)] min-w-[100px]"
+                className="h-8 text-[9px] bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] min-w-[80px]"
               >
-                {isCheckingEnel ? (
-                  <>
-                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
-                    Consultando...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="w-3 h-3 mr-1" />
-                    Consultar
-                  </>
-                )}
+                {isCheckingEnel ? <Loader2 className="w-3 h-3 animate-spin" /> : <RefreshCw className="w-3 h-3 mr-1" />}
+                {isCheckingEnel ? '' : 'Consultar'}
               </Button>
+            </div>
+          </div>
+
+          <div className="pt-4 border-t border-white/5 space-y-3">
+            <div className="flex items-center justify-between">
+              <p className="text-[9px] text-gray-500 uppercase font-bold flex items-center gap-1">
+                <Users className="w-3 h-3" /> Clientes Associados
+              </p>
+              <Badge variant="secondary" className="text-[9px]">{dc.customers?.length || 0}</Badge>
+            </div>
+
+            {isAdmin && (
+              <div className="flex flex-col gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
+                <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
+                  <SelectTrigger className="bg-black/20 border-white/10 h-8 text-[10px]"><SelectValue placeholder="Add Cliente" /></SelectTrigger>
+                  <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                    {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+                <div className="flex gap-2">
+                  <Input 
+                    value={groupCode} 
+                    onChange={e => setGroupCode(e.target.value)} 
+                    placeholder="Cód. Grupo" 
+                    className="bg-black/20 border-white/10 h-8 text-[10px] flex-grow" 
+                  />
+                  <Button onClick={addCustomerToDatacenter} size="sm" className="bg-[#00ff88] text-black h-8 px-3"><Plus className="w-3 h-3" /></Button>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-1.5 max-h-[120px] overflow-y-auto custom-scrollbar pr-1">
+              {(dc.customers || []).map((oc: any) => {
+                const customer = customers.find(c => c.id === oc.customerId);
+                return (
+                  <div key={oc.customerId} className="flex items-center justify-between p-2 bg-white/5 rounded border border-white/5 group/cust">
+                    <div className="flex flex-col min-w-0">
+                      <span className="text-[10px] font-bold text-white truncate">{customer?.name || 'Removido'}</span>
+                      <span className="text-[8px] text-gray-500">Cód: {oc.groupCode || '-'}</span>
+                    </div>
+                    {isAdmin && (
+                      <Button variant="ghost" size="icon" onClick={() => removeCustomerFromDatacenter(oc.customerId)} className="w-6 h-6 text-gray-600 hover:text-red-500 opacity-0 group-hover/cust:opacity-100 transition-all"><Trash2 className="w-3 h-3" /></Button>
+                    )}
+                  </div>
+                );
+              })}
+              {(dc.customers || []).length === 0 && (
+                <p className="text-[9px] text-gray-700 text-center py-2 italic">Nenhum cliente associado</p>
+              )}
             </div>
           </div>
         </div>

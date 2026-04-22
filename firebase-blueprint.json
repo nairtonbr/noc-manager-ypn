@@ -78,7 +78,8 @@
       "properties": {
         "name": { "type": "string" },
         "address": { "type": "string" },
-        "cpfCnpj": { "type": "string" }
+        "cpfCnpj": { "type": "string" },
+        "groupId": { "type": "string" }
       },
       "required": ["name"]
     },
@@ -96,7 +97,17 @@
         "enelClientId": { "type": "string" },
         "enelCpfCnpj": { "type": "string" },
         "enelOwnerName": { "type": "string" },
-        "enelOwnerCpf": { "type": "string" }
+        "enelOwnerCpf": { "type": "string" },
+        "customers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "customerId": { "type": "string" },
+              "groupCode": { "type": "string" }
+            }
+          }
+        }
       },
       "required": ["name"]
     },
@@ -158,35 +169,14 @@
         "text": { "type": "string" },
         "createdBy": { "type": "string" },
         "createdAt": { "type": "string", "format": "date-time" },
-        "targetType": { "type": "string", "enum": ["all", "olts", "customers"] },
+        "targetType": { "type": "string", "enum": ["all", "datacenters", "customers"] },
         "targetIds": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["text", "createdBy", "createdAt"]
-    },
-    "OLT": {
-      "title": "OLT",
-      "description": "Optical Line Terminal management",
-      "type": "object",
-      "properties": {
-        "name": { "type": "string" },
-        "description": { "type": "string" },
-        "customers": {
-          "type": "array",
-          "items": {
-            "type": "object",
-            "properties": {
-              "customerId": { "type": "string" },
-              "groupCode": { "type": "string" }
-            }
-          }
-        }
-      },
-      "required": ["name"]
     }
   },
   "firestore": {
     "/announcements/{announcementId}": { "schema": "Announcement", "description": "Announcements collection" },
-    "/olts/{oltId}": { "schema": "OLT", "description": "OLTs collection" },
     "/assets/{assetId}": { "schema": "Asset", "description": "Assets collection" },
     "/tickets/{ticketId}": { "schema": "Ticket", "description": "Tickets collection" },
     "/tickets/{ticketId}/comments/{commentId}": { "schema": "Comment", "description": "Comments sub-collection for tickets" },
