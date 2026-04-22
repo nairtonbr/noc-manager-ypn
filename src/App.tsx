@@ -69,7 +69,7 @@ function Dashboard() {
 
   const isAdmin = role === 'admin';
 
-  const onWhatsAppNotification = async (message: string, targetPhone?: string) => {
+  const onWhatsAppNotification = async (message: string, targetPhone?: string, imageUrl?: string) => {
     if (!settings || !settings.evolutionWebUrl || !settings.evolutionWebApiKey || !settings.evolutionWebInstance) {
       return;
     }
@@ -78,17 +78,29 @@ function Dashboard() {
     if (!phone) return;
 
     try {
-      await fetch(`${settings.evolutionWebUrl}/message/sendText/${settings.evolutionWebInstance}`, {
+      const endpoint = imageUrl ? 'sendMedia' : 'sendText';
+      const url = `${settings.evolutionWebUrl}/message/${endpoint}/${settings.evolutionWebInstance}`;
+      
+      const body: any = {
+        number: phone.replace(/\D/g, ''),
+        delay: 1200
+      };
+
+      if (imageUrl) {
+        body.mediatype = 'image';
+        body.media = imageUrl;
+        body.caption = message;
+      } else {
+        body.text = message;
+      }
+
+      await fetch(url, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'apikey': settings.evolutionWebApiKey
         },
-        body: JSON.stringify({
-          number: phone.replace(/\D/g, ''),
-          text: message,
-          delay: 1200
-        })
+        body: JSON.stringify(body)
       });
     } catch (error) {
       console.error("Error sending WhatsApp notification:", error);
@@ -360,7 +372,7 @@ function Dashboard() {
           </TabsContent>
 
           <TabsContent value="announcements" className="mt-4 sm:mt-0">
-            <AnnouncementsManager announcements={announcements} datacenters={datacenters} customers={customers} isAdmin={isAdmin} settings={settings} />
+            <AnnouncementsManager announcements={announcements} datacenters={datacenters} customers={customers} isAdmin={isAdmin} settings={settings} onNotify={onWhatsAppNotification} />
           </TabsContent>
 
           <TabsContent value="settings" className="mt-4 sm:mt-0">
@@ -1467,8 +1479,9 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
   );
 }
 
-function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, settings }: { announcements: any[], datacenters: any[], customers: any[], isAdmin: boolean, settings: any }) {
+function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, settings, onNotify }: { announcements: any[], datacenters: any[], customers: any[], isAdmin: boolean, settings: any, onNotify: Function }) {
   const [newMsg, setNewMsg] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
   const [targetType, setTargetType] = useState<"all" | "datacenters" | "customers">("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { user } = useAuth();
@@ -1486,12 +1499,44 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
     try {
       await addDoc(collection(db, 'announcements'), {
         text: newMsg,
+        imageUrl,
         targetType,
         targetIds: selectedIds,
         createdBy: user?.uid,
         createdAt: new Date().toISOString()
       });
+
+      // Notificar via WhatsApp
+      if (settings && settings.evolutionWebUrl) {
+        let targets: string[] = [];
+        if (targetType === "all") {
+          // No current way to get all user phones easily since they are only in Auth/Users
+          // We send to the notification phone configured in settings as a broadcast
+          targets = [settings.notificationPhone];
+        } else if (targetType === "datacenters") {
+          const targetDatacenters = datacenters.filter(d => selectedIds.includes(d.id));
+          const customerIds = new Set<string>();
+          targetDatacenters.forEach(d => {
+            (d.customers || []).forEach((c: any) => customerIds.add(c.customerId));
+          });
+          targets = customers
+            .filter(c => customerIds.has(c.id))
+            .map(c => c.phone)
+            .filter(Boolean);
+        } else if (targetType === "customers") {
+          targets = customers
+            .filter(c => selectedIds.includes(c.id))
+            .map(c => c.phone)
+            .filter(Boolean);
+        }
+
+        for (const phone of targets) {
+          await onNotify(newMsg, phone, imageUrl);
+        }
+      }
+
       setNewMsg("");
+      setImageUrl("");
       setTargetType("all");
       setSelectedIds([]);
     } catch (err) {
@@ -1566,14 +1611,34 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
               )}
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-gray-400 uppercase text-[10px] font-bold">Mensagem do Aviso</Label>
-              <Textarea 
-                value={newMsg} 
-                onChange={(e) => setNewMsg(e.target.value)}
-                placeholder="Digite aqui o aviso importante..."
-                className="bg-white/5 border-white/10 min-h-[120px] resize-none focus:border-[#00ff88]/50 text-[#00ff88]"
-              />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label className="text-gray-400 uppercase text-[10px] font-bold">Mensagem do Aviso</Label>
+                <Textarea 
+                  value={newMsg} 
+                  onChange={(e) => setNewMsg(e.target.value)}
+                  placeholder="Digite aqui o aviso importante..."
+                  className="bg-white/5 border-white/10 min-h-[120px] resize-none focus:border-[#00ff88]/50 text-[#00ff88]"
+                  required
+                />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-400 uppercase text-[10px] font-bold">URL da Imagem (Opcional)</Label>
+                <div className="flex gap-2">
+                  <Input 
+                    value={imageUrl} 
+                    onChange={(e) => setImageUrl(e.target.value)}
+                    placeholder="https://exemplo.com/imagem.jpg"
+                    className="bg-white/5 border-white/10 h-10 text-[#00ff88]"
+                  />
+                  {imageUrl && (
+                    <div className="w-10 h-10 rounded border border-white/10 overflow-hidden shrink-0">
+                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                    </div>
+                  )}
+                </div>
+                <p className="text-[10px] text-gray-500 italic">Insira o link de uma imagem para enviar via WhatsApp.</p>
+              </div>
             </div>
             <Button disabled={isSending} type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 hover:bg-[#00cc6e]">
               {isSending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
@@ -1614,6 +1679,11 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                       <Badge variant="outline" className="bg-[#00ff88]/10 text-[#00ff88] border-[#00ff88]/20 text-[9px] uppercase">Público: Toda a Equipe</Badge>
                     )}
                   </div>
+                  {ann.imageUrl && (
+                    <div className="mb-4 rounded-xl overflow-hidden border border-white/5 max-w-sm">
+                      <img src={ann.imageUrl} alt="Imagem do Aviso" className="w-full h-auto" />
+                    </div>
+                  )}
                   <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">{ann.text}</p>
                   <p className="text-[10px] text-gray-500 mt-4 flex items-center gap-2">
                     <Clock className="w-3 h-3" />
@@ -1867,7 +1937,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
 }
 
 function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: boolean }) {
-  const [formData, setFormData] = useState({ name: '', address: '', cpfCnpj: '', groupId: '' });
+  const [formData, setFormData] = useState({ name: '', address: '', cpfCnpj: '', groupId: '', phone: '' });
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
@@ -1881,6 +1951,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
         address: formData.address.toUpperCase(),
         cpfCnpj: formData.cpfCnpj.toUpperCase(),
         groupId: formData.groupId.toUpperCase(),
+        phone: formData.phone.replace(/\D/g, ''),
         updatedAt: serverTimestamp()
       };
 
@@ -1892,7 +1963,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
           createdAt: serverTimestamp()
         });
       }
-      setFormData({ name: '', address: '', cpfCnpj: '', groupId: '' });
+      setFormData({ name: '', address: '', cpfCnpj: '', groupId: '', phone: '' });
       setIsAdding(false);
       setEditingId(null);
     } catch (err) {
@@ -1905,7 +1976,8 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
       name: customer.name || '',
       address: customer.address || '',
       cpfCnpj: customer.cpfCnpj || '',
-      groupId: customer.groupId || ''
+      groupId: customer.groupId || '',
+      phone: customer.phone || ''
     });
     setEditingId(customer.id);
     setIsAdding(true);
@@ -1914,7 +1986,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
   const cancelAction = () => {
     setIsAdding(false);
     setEditingId(null);
-    setFormData({ name: '', address: '', cpfCnpj: '', groupId: '' });
+    setFormData({ name: '', address: '', cpfCnpj: '', groupId: '', phone: '' });
   };
 
   const handleDelete = async (id: string) => {
@@ -1968,10 +2040,14 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
               {editingId ? <Edit2 className="w-3 h-3" /> : <Plus className="w-3 h-3" />}
               {editingId ? 'Editar Cliente' : 'Cadastrar Novo Cliente'}
             </div>
-            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-5 gap-4">
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">Nome</Label>
                 <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" required />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-gray-400 text-xs uppercase">WhatsApp</Label>
+                <Input value={formData.phone} onChange={e => setFormData({...formData, phone: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" placeholder="8599999999" />
               </div>
               <div className="space-y-2">
                 <Label className="text-gray-400 text-xs uppercase">Endereço</Label>
@@ -1985,7 +2061,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                 <Label className="text-gray-400 text-xs uppercase">Nº/ID Grupo</Label>
                 <Input value={formData.groupId} onChange={e => setFormData({...formData, groupId: e.target.value})} className="bg-white/5 border-white/10 uppercase h-10 text-[#00ff88]" placeholder="EX: G01" />
               </div>
-              <Button type="submit" className="md:col-span-4 bg-[#00ff88] text-black font-bold h-10 w-full">
+              <Button type="submit" className="md:col-span-5 bg-[#00ff88] text-black font-bold h-10 w-full">
                 {editingId ? 'Salvar Edição' : 'Salvar Cliente'}
               </Button>
             </form>
@@ -2002,7 +2078,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                     {customer.groupId && <Badge variant="outline" className="text-[8px] border-[#00ff88]/30 text-[#00ff88] py-0 h-4 shrink-0">GRUPO: {customer.groupId}</Badge>}
                   </p>
                   <p className="text-[10px] text-gray-400 uppercase truncate mt-1">{customer.address || 'SEM ENDEREÇO'}</p>
-                  <p className="text-[10px] text-gray-500 font-mono mt-0.5">{customer.cpfCnpj || 'SEM CPF/CNPJ'}</p>
+                  <p className="text-[10px] text-gray-500 font-mono mt-0.5">{customer.phone || 'SEM TELEFONE'}</p>
                 </div>
                 {isAdmin && (
                   <div className="flex gap-1 justify-end pt-3 border-t border-white/5 sm:opacity-0 group-hover:opacity-100 transition-all">
@@ -2029,7 +2105,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                 <tr className="bg-black/20 border-b border-white/5">
                   <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Nome</th>
                   <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Endereço</th>
-                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">CPF/CNPJ</th>
+                  <th className="p-4 text-[10px] font-bold uppercase text-gray-500">WhatsApp</th>
                   <th className="p-4 text-[10px] font-bold uppercase text-gray-500">Grupo</th>
                   {isAdmin && <th className="p-4 text-[10px] font-bold uppercase text-gray-500 text-right">Ações</th>}
                 </tr>
@@ -2043,7 +2119,7 @@ function CustomerManager({ customers, isAdmin }: { customers: any[], isAdmin: bo
                     <td className="p-4">
                       <div className="text-[10px] text-gray-400 uppercase truncate max-w-[200px]">{customer.address || '-'}</div>
                     </td>
-                    <td className="p-4 text-[10px] text-gray-500 font-mono">{customer.cpfCnpj || '-'}</td>
+                    <td className="p-4 text-[10px] text-[#00ff88] font-mono">{customer.phone || '-'}</td>
                     <td className="p-4 text-[10px] text-gray-400">{customer.groupId || '-'}</td>
                     {isAdmin && (
                       <td className="p-4">
