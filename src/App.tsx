@@ -88,7 +88,13 @@ function Dashboard() {
 
       if (imageUrl) {
         body.mediatype = 'image';
-        body.media = imageUrl;
+        if (imageUrl.startsWith('data:')) {
+          const parts = imageUrl.split(';base64,');
+          body.media = parts[1];
+          // body.mimetype = parts[0].split(':')[1];
+        } else {
+          body.media = imageUrl;
+        }
         body.caption = message;
       } else {
         body.text = message;
@@ -1481,11 +1487,24 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
 
 function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, settings, onNotify }: { announcements: any[], datacenters: any[], customers: any[], isAdmin: boolean, settings: any, onNotify: Function }) {
   const [newMsg, setNewMsg] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [targetType, setTargetType] = useState<"all" | "datacenters" | "customers">("all");
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const { user } = useAuth();
   const [isSending, setIsSending] = useState(false);
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1497,21 +1516,19 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
 
     setIsSending(true);
     try {
+      // Salvar o aviso no Firestore SEM a imagem
       await addDoc(collection(db, 'announcements'), {
         text: newMsg,
-        imageUrl,
         targetType,
         targetIds: selectedIds,
         createdBy: user?.uid,
         createdAt: new Date().toISOString()
       });
 
-      // Notificar via WhatsApp
+      // Notificar via WhatsApp (com a imagem se houver)
       if (settings && settings.evolutionWebUrl) {
         let targets: string[] = [];
         if (targetType === "all") {
-          // No current way to get all user phones easily since they are only in Auth/Users
-          // We send to the notification phone configured in settings as a broadcast
           targets = [settings.notificationPhone];
         } else if (targetType === "datacenters") {
           const targetDatacenters = datacenters.filter(d => selectedIds.includes(d.id));
@@ -1530,13 +1547,15 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
             .filter(Boolean);
         }
 
+        // Se houver imagem, usaremos o preview (Base64) para o envio
         for (const phone of targets) {
-          await onNotify(newMsg, phone, imageUrl);
+          await onNotify(newMsg, phone, imagePreview);
         }
       }
 
       setNewMsg("");
-      setImageUrl("");
+      setImageFile(null);
+      setImagePreview(null);
       setTargetType("all");
       setSelectedIds([]);
     } catch (err) {
@@ -1623,21 +1642,37 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                 />
               </div>
               <div className="space-y-2">
-                <Label className="text-gray-400 uppercase text-[10px] font-bold">URL da Imagem (Opcional)</Label>
-                <div className="flex gap-2">
-                  <Input 
-                    value={imageUrl} 
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://exemplo.com/imagem.jpg"
-                    className="bg-white/5 border-white/10 h-10 text-[#00ff88]"
-                  />
-                  {imageUrl && (
-                    <div className="w-10 h-10 rounded border border-white/10 overflow-hidden shrink-0">
-                      <img src={imageUrl} alt="Preview" className="w-full h-full object-cover" />
+                <Label className="text-gray-400 uppercase text-[10px] font-bold">Anexar Imagem (Opcional - Não Armazenada)</Label>
+                <div className="flex gap-4 items-center">
+                  <div className="flex-1 relative">
+                    <input 
+                      type="file" 
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden" 
+                      id="announcement-image"
+                    />
+                    <label 
+                      htmlFor="announcement-image"
+                      className="flex items-center justify-center gap-2 w-full h-10 bg-white/5 border border-dashed border-white/20 rounded-lg cursor-pointer hover:bg-white/10 transition-all text-xs text-gray-400"
+                    >
+                      <Plus className="w-4 h-4" /> {imageFile ? imageFile.name : 'Clique para anexar imagem'}
+                    </label>
+                  </div>
+                  {imagePreview && (
+                    <div className="w-12 h-12 rounded-lg border border-[#00ff88]/30 overflow-hidden shrink-0 relative group">
+                      <img src={imagePreview} alt="Preview" className="w-full h-full object-cover" />
+                      <button 
+                        type="button"
+                        onClick={() => { setImageFile(null); setImagePreview(null); }}
+                        className="absolute inset-0 bg-black/60 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        <Trash className="w-4 h-4 text-red-500" />
+                      </button>
                     </div>
                   )}
                 </div>
-                <p className="text-[10px] text-gray-500 italic">Insira o link de uma imagem para enviar via WhatsApp.</p>
+                <p className="text-[10px] text-gray-500 italic">A imagem será enviada pelo WhatsApp, mas não ficará salva no histórico do sistema.</p>
               </div>
             </div>
             <Button disabled={isSending} type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 hover:bg-[#00cc6e]">
@@ -1679,11 +1714,6 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                       <Badge variant="outline" className="bg-[#00ff88]/10 text-[#00ff88] border-[#00ff88]/20 text-[9px] uppercase">Público: Toda a Equipe</Badge>
                     )}
                   </div>
-                  {ann.imageUrl && (
-                    <div className="mb-4 rounded-xl overflow-hidden border border-white/5 max-w-sm">
-                      <img src={ann.imageUrl} alt="Imagem do Aviso" className="w-full h-auto" />
-                    </div>
-                  )}
                   <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">{ann.text}</p>
                   <p className="text-[10px] text-gray-500 mt-4 flex items-center gap-2">
                     <Clock className="w-3 h-3" />
