@@ -71,45 +71,43 @@ function Dashboard() {
 
   const onWhatsAppNotification = async (message: string, targetPhone?: string, imageUrl?: string) => {
     if (!settings || !settings.evolutionWebUrl || !settings.evolutionWebApiKey || !settings.evolutionWebInstance) {
+      console.error("WhatsApp settings not fully configured");
       return;
     }
 
     const phone = targetPhone || settings.notificationPhone;
-    if (!phone) return;
+    if (!phone) {
+      console.error("No target phone specified");
+      return;
+    }
 
     try {
-      const endpoint = imageUrl ? 'sendMedia' : 'sendText';
-      const url = `${settings.evolutionWebUrl}/message/${endpoint}/${settings.evolutionWebInstance}`;
-      
-      const body: any = {
-        number: phone.replace(/\D/g, ''),
-        delay: 1200
-      };
-
-      if (imageUrl) {
-        body.mediatype = 'image';
-        if (imageUrl.startsWith('data:')) {
-          const parts = imageUrl.split(';base64,');
-          body.media = parts[1];
-          // body.mimetype = parts[0].split(':')[1];
-        } else {
-          body.media = imageUrl;
-        }
-        body.caption = message;
-      } else {
-        body.text = message;
-      }
-
-      await fetch(url, {
+      console.log(`Sending WhatsApp request for ${phone}...`);
+      const response = await fetch('/api/whatsapp/send', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
-          'apikey': settings.evolutionWebApiKey
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(body)
+        body: JSON.stringify({
+          url: settings.evolutionWebUrl,
+          apiKey: settings.evolutionWebApiKey,
+          instance: settings.evolutionWebInstance,
+          phone,
+          message,
+          imageUrl
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.details || errorData.error || "Unknown server error");
+      }
+
+      console.log(`WhatsApp sent to ${phone}`);
+      return true;
     } catch (error) {
       console.error("Error sending WhatsApp notification:", error);
+      throw error;
     }
   };
 
@@ -1515,6 +1513,10 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
     }
 
     setIsSending(true);
+    console.log("Iniciando envio de aviso...");
+    console.log("Tipo de alvo:", targetType);
+    console.log("IDs selecionados:", selectedIds);
+
     try {
       // Salvar o aviso no Firestore SEM a imagem
       await addDoc(collection(db, 'announcements'), {
@@ -1529,27 +1531,64 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
       if (settings && settings.evolutionWebUrl) {
         let targets: string[] = [];
         if (targetType === "all") {
-          targets = [settings.notificationPhone];
+          const customerPhones = customers.map(c => c.phone).filter(Boolean);
+          targets = Array.from(new Set([settings.notificationPhone, ...customerPhones])).filter(Boolean);
+          console.log(`Público geral: ${targets.length} destinatários encontrados.`);
         } else if (targetType === "datacenters") {
           const targetDatacenters = datacenters.filter(d => selectedIds.includes(d.id));
           const customerIds = new Set<string>();
+          
           targetDatacenters.forEach(d => {
-            (d.customers || []).forEach((c: any) => customerIds.add(c.customerId));
+            const dcCustomers = d.customers || [];
+            console.log(`Analisando Datacenter: ${d.name} (${dcCustomers.length} clientes vinculados)`);
+            dcCustomers.forEach((c: any) => {
+              if (typeof c === 'string') customerIds.add(c);
+              else if (c && c.customerId) customerIds.add(c.customerId);
+            });
           });
-          targets = customers
+          
+          console.log(`Total de IDs únicos de clientes encontrados: ${customerIds.size}`);
+          
+          targets = Array.from(new Set(customers
             .filter(c => customerIds.has(c.id))
-            .map(c => c.phone)
-            .filter(Boolean);
+            .map(c => {
+              if (!c.phone) console.warn(`Cliente ${c.name} está vinculado mas não possui telefone cadastrado.`);
+              return c.phone;
+            })
+            .filter(Boolean)));
+
+          console.log(`Total de telefones válidos para envio: ${targets.length}`);
+
+          if (targets.length === 0) {
+            alert(`Nenhum telefone encontrado para os datacenters: ${targetDatacenters.map(d => d.name).join(", ")}. Verifique se os clientes vinculados possuem o campo WhatsApp preenchido.`);
+            setIsSending(false);
+            return;
+          }
         } else if (targetType === "customers") {
           targets = customers
             .filter(c => selectedIds.includes(c.id))
             .map(c => c.phone)
             .filter(Boolean);
+          console.log(`Clientes específicos: ${targets.length} destinatários encontrados.`);
         }
 
         // Se houver imagem, usaremos o preview (Base64) para o envio
+        let count = 0;
+        let errors = 0;
         for (const phone of targets) {
-          await onNotify(newMsg, phone, imagePreview);
+          try {
+            await onNotify(newMsg, phone, imagePreview);
+            count++;
+          } catch (err: any) {
+            console.error(`Falha ao enviar para ${phone}:`, err);
+            errors++;
+          }
+        }
+        
+        if (errors > 0) {
+          alert(`Envio concluído com ressalvas: ${count} sucesso(s) e ${errors} falha(s). Verifique os números ou a conexão com o Evolution.`);
+        } else {
+          console.log(`Envio concluído: ${count} mensagens processadas.`);
         }
       }
 

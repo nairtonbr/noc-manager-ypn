@@ -104,6 +104,67 @@ async function startServer() {
     }
   });
 
+  // API Route for WhatsApp Notification (Proxy to Evolution)
+  app.post("/api/whatsapp/send", async (req, res) => {
+    const { url, apiKey, instance, phone, message, imageUrl } = req.body;
+
+    if (!url || !apiKey || !instance || !phone || !message) {
+      return res.status(400).json({ error: "Missing required WhatsApp parameters" });
+    }
+
+    try {
+      let formattedPhone = phone.replace(/\D/g, "");
+      // Add country code 55 if missing (assuming Brazil)
+      if (formattedPhone.length >= 10 && formattedPhone.length <= 11) {
+        formattedPhone = "55" + formattedPhone;
+      }
+
+      const endpoint = imageUrl ? "sendMedia" : "sendText";
+      const baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
+      const targetUrl = `${baseUrl}/message/${endpoint}/${instance}`;
+
+      const body: any = {
+        number: formattedPhone,
+        delay: 1200,
+      };
+
+      if (imageUrl) {
+        body.mediatype = "image";
+        if (imageUrl.startsWith("data:")) {
+          const parts = imageUrl.split(";base64,");
+          const mimePart = parts[0].split(":")[1];
+          body.media = parts[1];
+          body.mimetype = mimePart.split(";")[0] || "image/jpeg";
+          body.fileName = "image.jpg";
+        } else {
+          body.media = imageUrl;
+          body.fileName = "image.jpg";
+        }
+        body.caption = message;
+      } else {
+        body.text = message;
+      }
+
+      console.log(`📲 Encaminhando WhatsApp para ${formattedPhone} via ${endpoint}...`);
+      
+      const response = await axios.post(targetUrl, body, {
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": apiKey
+        },
+        timeout: 10000
+      });
+
+      res.json(response.data);
+    } catch (error: any) {
+      console.error("❌ Erro no Proxy WhatsApp:", error.response?.data || error.message);
+      res.status(500).json({ 
+        error: "Erro ao enviar via Evolution API", 
+        details: error.response?.data || error.message 
+      });
+    }
+  });
+
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {
     const vite = await createViteServer({
