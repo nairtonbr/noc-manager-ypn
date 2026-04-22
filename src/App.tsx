@@ -99,8 +99,15 @@ function Dashboard() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.details || errorData.error || "Unknown server error");
+        let errorMsg = "Unknown server error";
+        try {
+          const errorData = await response.json();
+          errorMsg = errorData.details || errorData.error || errorMsg;
+        } catch (e) {
+          const textError = await response.text();
+          errorMsg = textError.slice(0, 100) || response.statusText;
+        }
+        throw new Error(errorMsg);
       }
 
       console.log(`WhatsApp sent to ${phone}`);
@@ -1483,6 +1490,79 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
   );
 }
 
+const MESSAGE_TEMPLATES = [
+  {
+    title: "Rompimento",
+    text: `⚠️ AVISO DE INCIDENTE – ROMPIMENTO DE CABO ÓPTICO
+
+Informamos que foi identificado um rompimento de cabo óptico em nossa infraestrutura, impactando parcialmente os serviços de conectividade na região de Pacatuba e Guaiuba.
+
+🔍 Causa:
+Rompimento físico de fibra óptica devido a um poste em chamas na localização: -3.985135572006407, -38.61918637515611.
+
+🛠️ Ações em andamento:
+Nossa equipe técnica já está atuando no local para normalização, realizando identificação do ponto exato e execução dos reparos necessários.
+
+⏱️ SLA estimado para normalização:
+Previsão inicial de até 06 horas [20h - 22/04], podendo variar conforme complexidade do reparo e condições do local.
+
+🔄 Próxima atualização:
+Uma nova atualização será fornecida em até 01 hora, ou assim que houver avanço relevante no cenário.
+
+📡 Status: Em andamento
+
+Agradecemos a compreensão e seguimos empenhados para restabelecer os serviços no menor tempo possível.`
+  },
+  {
+    title: "Rompimento Concluído",
+    text: `✅ AVISO DE NORMALIZAÇÃO – SERVIÇOS RESTABELECIDOS
+
+Informamos que o incidente de rompimento de cabo óptico foi totalmente resolvido, com a devida normalização dos serviços afetados.
+
+🛠️ Ação realizada:
+Execução de reparo na fibra óptica, incluindo fusão e testes de qualidade para garantir a estabilidade da rede.
+
+📡 Status: Normalizado
+
+⏱️ Horário de conclusão:
+[Inserir data e hora]
+
+🔍 Causa:
+Rompimento físico de cabo óptico (ex.: intervenção de terceiros/obra civil).
+
+Seguimos monitorando o ambiente para assegurar a estabilidade dos serviços.
+
+Agradecemos a compreensão durante o período de indisponibilidade.`
+  },
+  {
+    title: "Serviços Instáveis",
+    text: `⚠️ AVISO DE INSTABILIDADE – SERVIÇOS DE CONECTIVIDADE
+
+Identificamos instabilidade nos serviços de conectividade, podendo ocasionar intermitência, aumento de latência ou degradação de desempenho para alguns clientes.
+
+🔍 Causa:
+Em análise pela equipe técnica.
+
+🛠️ Ações em andamento:
+Nosso time está atuando na identificação da causa raiz e aplicando medidas corretivas para estabilização do ambiente.
+
+📡 Impacto:
+Parcial – podendo variar conforme região/rota.
+
+⏱️ SLA estimado para normalização:
+Previsão inicial de até 04 horas, sujeito a revisão conforme evolução do atendimento.
+
+🔄 Próxima atualização:
+Nova atualização será publicada em até 01 hora, ou assim que houver progresso relevante.
+
+📡 Status: Em andamento
+
+Seguimos trabalhando para normalizar os serviços no menor tempo possível e manteremos todos informados.
+
+Agradecemos a compreensão.`
+  }
+];
+
 function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, settings, onNotify }: { announcements: any[], datacenters: any[], customers: any[], isAdmin: boolean, settings: any, onNotify: Function }) {
   const [newMsg, setNewMsg] = useState("");
   const [imageFile, setImageFile] = useState<File | null>(null);
@@ -1715,6 +1795,25 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                   )}
                 </div>
                 <p className="text-[10px] text-gray-500 italic">A imagem será enviada pelo WhatsApp, mas não ficará salva no histórico do sistema.</p>
+                
+                <div className="pt-4 space-y-2 border-t border-white/5">
+                  <Label className="text-gray-400 uppercase text-[10px] font-bold">Modelos Rápidos</Label>
+                  <div className="flex flex-wrap gap-2">
+                    {MESSAGE_TEMPLATES.map((tpl, i) => (
+                      <Button
+                        key={i}
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setNewMsg(tpl.text)}
+                        className="bg-white/5 border-white/10 text-gray-300 hover:text-[#00ff88] hover:border-[#00ff88]/50 text-xs px-3 py-2 h-auto"
+                      >
+                        <FileText className="w-3 h-3 mr-2" />
+                        {tpl.title}
+                      </Button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
             <Button disabled={isSending} type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 hover:bg-[#00cc6e]">
