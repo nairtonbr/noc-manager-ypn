@@ -1734,9 +1734,23 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
 
               {targetType !== "all" && (
                 <div className="space-y-2">
-                  <Label className="text-gray-400 uppercase text-[10px] font-bold">
-                    Selecionar {targetType === "datacenters" ? "Datacenters" : "Clientes"}
-                  </Label>
+                  <div className="flex justify-between items-center">
+                    <Label className="text-gray-400 uppercase text-[10px] font-bold">
+                      Selecionar {targetType === "datacenters" ? "Datacenters" : "Clientes"}
+                    </Label>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => {
+                        const allIds = (targetType === "datacenters" ? datacenters : customers).map(i => i.id);
+                        setSelectedIds(allIds);
+                      }}
+                      className="h-auto py-0 px-2 text-[10px] text-[#00ff88] hover:text-[#00cc6e] hover:bg-[#00ff88]/10"
+                    >
+                      Selecionar todos
+                    </Button>
+                  </div>
                   <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border border-white/10 rounded-md bg-white/5">
                     {(targetType === "datacenters" ? datacenters : customers).map(item => (
                       <Badge 
