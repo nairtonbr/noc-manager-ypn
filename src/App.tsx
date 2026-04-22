@@ -1532,13 +1532,13 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
               <div className="space-y-2">
                 <Label className="text-gray-400 uppercase text-[10px] font-bold">Destinatários</Label>
                 <Select value={targetType} onValueChange={(v: any) => { setTargetType(v); setSelectedIds([]); }}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-[#00ff88]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                    <SelectItem value="all">Toda a Equipe (Geral)</SelectItem>
-                    <SelectItem value="datacenters">Datacenters</SelectItem>
-                    <SelectItem value="customers">Clientes Específicos</SelectItem>
+                    <SelectItem value="all" className="text-[#00ff88]">Toda a Equipe (Geral)</SelectItem>
+                    <SelectItem value="datacenters" className="text-[#00ff88]">Datacenters</SelectItem>
+                    <SelectItem value="customers" className="text-[#00ff88]">Clientes Específicos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -1570,7 +1570,7 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
                 value={newMsg} 
                 onChange={(e) => setNewMsg(e.target.value)}
                 placeholder="Digite aqui o aviso importante..."
-                className="bg-white/5 border-white/10 min-h-[120px] resize-none focus:border-[#00ff88]/50 text-white"
+                className="bg-white/5 border-white/10 min-h-[120px] resize-none focus:border-[#00ff88]/50 text-[#00ff88]"
               />
             </div>
             <Button disabled={isSending} type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 hover:bg-[#00cc6e]">
@@ -1726,7 +1726,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                       value={formData.evolutionWebUrl}
                       onChange={e => setFormData({...formData, evolutionWebUrl: e.target.value})}
                       placeholder="https://api.evolution.com"
-                      className="bg-white/5 border-white/10 h-12 rounded-xl"
+                      className="bg-white/5 border-white/10 h-12 rounded-xl text-[#00ff88]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1737,7 +1737,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                       value={formData.evolutionWebApiKey}
                       onChange={e => setFormData({...formData, evolutionWebApiKey: e.target.value})}
                       placeholder="Sua API Key"
-                      className="bg-white/5 border-white/10 h-12 rounded-xl"
+                      className="bg-white/5 border-white/10 h-12 rounded-xl text-[#00ff88]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1747,7 +1747,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                       value={formData.evolutionWebInstance}
                       onChange={e => setFormData({...formData, evolutionWebInstance: e.target.value})}
                       placeholder="Instancia_NOC"
-                      className="bg-white/5 border-white/10 h-12 rounded-xl"
+                      className="bg-white/5 border-white/10 h-12 rounded-xl text-[#00ff88]"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1757,7 +1757,7 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
                       value={formData.notificationPhone}
                       onChange={e => setFormData({...formData, notificationPhone: e.target.value})}
                       placeholder="5585999999999"
-                      className="bg-white/5 border-white/10 h-12 rounded-xl"
+                      className="bg-white/5 border-white/10 h-12 rounded-xl text-[#00ff88]"
                     />
                   </div>
                 </div>
@@ -2180,15 +2180,15 @@ function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean,
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Nome</Label>
-                      <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                     <div className="space-y-2">
                       <Label>Tipo</Label>
                       <Select value={formData.type} onValueChange={v => setFormData({...formData, type: v})}>
-                        <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="bg-white/5 border-white/10 text-[#00ff88]"><SelectValue /></SelectTrigger>
                         <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                          <SelectItem value="Próprio">Próprio</SelectItem>
-                          <SelectItem value="Alugado">Alugado</SelectItem>
+                          <SelectItem value="Próprio" className="text-[#00ff88]">Próprio</SelectItem>
+                          <SelectItem value="Alugado" className="text-[#00ff88]">Alugado</SelectItem>
                         </SelectContent>
                       </Select>
                     </div>
@@ -2196,36 +2196,36 @@ function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean,
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Localização</Label>
-                      <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                     <div className="space-y-2">
                       <Label>Endereço</Label>
-                      <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Cliente ENEL</Label>
-                      <Input value={formData.enelClientId} onChange={e => setFormData({...formData, enelClientId: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.enelClientId} onChange={e => setFormData({...formData, enelClientId: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                     <div className="space-y-2">
                       <Label>CPF/CNPJ ENEL</Label>
-                      <Input value={formData.enelCpfCnpj} onChange={e => setFormData({...formData, enelCpfCnpj: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.enelCpfCnpj} onChange={e => setFormData({...formData, enelCpfCnpj: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label>Titular ENEL</Label>
-                      <Input value={formData.enelOwnerName} onChange={e => setFormData({...formData, enelOwnerName: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.enelOwnerName} onChange={e => setFormData({...formData, enelOwnerName: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                     <div className="space-y-2">
                       <Label>CPF do Titular</Label>
-                      <Input value={formData.enelOwnerCpf} onChange={e => setFormData({...formData, enelOwnerCpf: e.target.value})} className="bg-white/5 border-white/10" />
+                      <Input value={formData.enelOwnerCpf} onChange={e => setFormData({...formData, enelOwnerCpf: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                     </div>
                   </div>
                   <div className="space-y-2">
                     <Label>Última Limpeza</Label>
-                    <Input type="date" value={formData.lastCleaning} onChange={e => setFormData({...formData, lastCleaning: e.target.value})} className="bg-white/5 border-white/10" />
+                    <Input type="date" value={formData.lastCleaning} onChange={e => setFormData({...formData, lastCleaning: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" />
                   </div>
                 </div>
                 <div className="flex justify-end gap-2">
@@ -2301,9 +2301,9 @@ function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean,
             {isAdmin && (
               <div className="flex flex-col gap-2 bg-white/5 p-2 rounded-lg border border-white/5">
                 <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
-                  <SelectTrigger className="bg-black/20 border-white/10 h-8 text-[10px]"><SelectValue placeholder="Add Cliente" /></SelectTrigger>
+                  <SelectTrigger className="bg-black/20 border-white/10 h-8 text-[10px] text-[#00ff88]"><SelectValue placeholder="Add Cliente" /></SelectTrigger>
                   <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
-                    {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    {customers.map(c => <SelectItem key={c.id} value={c.id} className="text-[#00ff88]">{c.name}</SelectItem>)}
                   </SelectContent>
                 </Select>
                 <div className="flex gap-2">
@@ -2311,7 +2311,7 @@ function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean,
                     value={groupCode} 
                     onChange={e => setGroupCode(e.target.value)} 
                     placeholder="Cód. Grupo" 
-                    className="bg-black/20 border-white/10 h-8 text-[10px] flex-grow" 
+                    className="bg-black/20 border-white/10 h-8 text-[10px] flex-grow text-[#00ff88]" 
                   />
                   <Button onClick={addCustomerToDatacenter} size="sm" className="bg-[#00ff88] text-black h-8 px-3"><Plus className="w-3 h-3" /></Button>
                 </div>
@@ -2376,26 +2376,26 @@ function NewDatacenterDialog() {
         <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Novo Datacenter / POP</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Nome</Label><Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10" /></div>
-            <div className="space-y-2"><Label>Localização</Label><Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="bg-white/5 border-white/10" /></div>
+            <div className="space-y-2"><Label>Nome</Label><Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
+            <div className="space-y-2"><Label>Localização</Label><Input value={formData.location} onChange={e => setFormData({...formData, location: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
           </div>
-          <div className="space-y-2"><Label>Endereço</Label><Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10" /></div>
+          <div className="space-y-2"><Label>Endereço</Label><Input value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2"><Label>Tipo</Label>
               <Select value={formData.type} onValueChange={v => setFormData({...formData, type: v})}>
-                <SelectTrigger className="bg-white/5 border-white/10"><SelectValue /></SelectTrigger>
-                <SelectContent><SelectItem value="Próprio">Próprio</SelectItem><SelectItem value="Alugado">Alugado</SelectItem></SelectContent>
+                <SelectTrigger className="bg-white/5 border-white/10 text-[#00ff88]"><SelectValue /></SelectTrigger>
+                <SelectContent className="bg-[#1c1c1c] border-white/10 text-[#00ff88]"><SelectItem value="Próprio">Próprio</SelectItem><SelectItem value="Alugado">Alugado</SelectItem></SelectContent>
               </Select>
             </div>
-            <div className="space-y-2"><Label>Última Limpeza</Label><Input type="date" value={formData.lastCleaning} onChange={e => setFormData({...formData, lastCleaning: e.target.value})} className="bg-white/5 border-white/10" /></div>
+            <div className="space-y-2"><Label>Última Limpeza</Label><Input type="date" value={formData.lastCleaning} onChange={e => setFormData({...formData, lastCleaning: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Cliente ENEL</Label><Input value={formData.enelClientId} onChange={e => setFormData({...formData, enelClientId: e.target.value})} className="bg-white/5 border-white/10" /></div>
-            <div className="space-y-2"><Label>CPF/CNPJ ENEL</Label><Input value={formData.enelCpfCnpj} onChange={e => setFormData({...formData, enelCpfCnpj: e.target.value})} className="bg-white/5 border-white/10" /></div>
+            <div className="space-y-2"><Label>Cliente ENEL</Label><Input value={formData.enelClientId} onChange={e => setFormData({...formData, enelClientId: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
+            <div className="space-y-2"><Label>CPF/CNPJ ENEL</Label><Input value={formData.enelCpfCnpj} onChange={e => setFormData({...formData, enelCpfCnpj: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
           </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2"><Label>Titular ENEL</Label><Input value={formData.enelOwnerName} onChange={e => setFormData({...formData, enelOwnerName: e.target.value})} className="bg-white/5 border-white/10" /></div>
-            <div className="space-y-2"><Label>CPF do Titular</Label><Input value={formData.enelOwnerCpf} onChange={e => setFormData({...formData, enelOwnerCpf: e.target.value})} className="bg-white/5 border-white/10" /></div>
+            <div className="space-y-2"><Label>Titular ENEL</Label><Input value={formData.enelOwnerName} onChange={e => setFormData({...formData, enelOwnerName: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
+            <div className="space-y-2"><Label>CPF do Titular</Label><Input value={formData.enelOwnerCpf} onChange={e => setFormData({...formData, enelOwnerCpf: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
           </div>
           <div className="flex justify-end gap-2 pt-4"><Button type="submit" className="bg-[#00ff88] text-black">Salvar</Button></div>
         </form>
@@ -2480,20 +2480,20 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl p-8">
                 <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">{editingItem ? 'Editar Item' : 'Adicionar ao Estoque'}</DialogTitle></DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6 py-4">
-                  <div className="space-y-2"><Label>Nome do Item</Label><Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10" /></div>
+                  <div className="space-y-2"><Label>Nome do Item</Label><Input required value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2"><Label>Quantidade Atual</Label><Input type="number" value={formData.quantity} onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})} className="bg-white/5 border-white/10" /></div>
-                    <div className="space-y-2"><Label>Qtd. Mínima</Label><Input type="number" value={formData.minQuantity} onChange={e => setFormData({...formData, minQuantity: parseInt(e.target.value)})} className="bg-white/5 border-white/10" /></div>
+                    <div className="space-y-2"><Label>Quantidade Atual</Label><Input type="number" value={formData.quantity} onChange={e => setFormData({...formData, quantity: parseInt(e.target.value)})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
+                    <div className="space-y-2"><Label>Qtd. Mínima</Label><Input type="number" value={formData.minQuantity} onChange={e => setFormData({...formData, minQuantity: parseInt(e.target.value)})} className="bg-white/5 border-white/10 text-[#00ff88]" /></div>
                   </div>
                   <div className="space-y-2">
                     <Label>Categoria</Label>
                     <Select value={formData.category} onValueChange={v => setFormData({...formData, category: v})}>
-                      <SelectTrigger className="bg-white/5 border-white/10">
+                      <SelectTrigger className="bg-white/5 border-white/10 text-[#00ff88]">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
                         {stockCategories.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                          <SelectItem key={cat} value={cat} className="text-[#00ff88]">{cat}</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
