@@ -80,6 +80,27 @@ service cloud.firestore {
              data.createdAt is string;
     }
 
+    function isValidAnnouncement(data) {
+      return data.text is string && data.text.size() > 0 &&
+             data.createdBy == request.auth.uid &&
+             data.createdAt is string;
+    }
+
+    function isValidOLT(data) {
+      return data.name is string && data.name.size() > 0;
+    }
+
+    match /announcements/{announcementId} {
+      allow read: if hasRole();
+      allow create: if isAdmin() && isValidAnnouncement(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /olts/{oltId} {
+      allow read: if hasRole();
+      allow write: if isAdmin() && isValidOLT(request.resource.data);
+    }
+
     match /assets/{assetId} {
       allow read: if hasRole();
       allow write: if isAdmin() && isValidAsset(request.resource.data);

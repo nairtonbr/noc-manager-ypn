@@ -30,7 +30,11 @@ import {
   User,
   RefreshCw,
   MessageSquare,
-  Send
+  Send,
+  Megaphone,
+  Radio,
+  Loader2,
+  Trash
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -57,6 +61,8 @@ function Dashboard() {
   const [users, setUsers] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
   const [settings, setSettings] = useState<any | null>(null);
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [olts, setOlts] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTab, setActiveTab] = useState("assets");
 
@@ -122,6 +128,16 @@ function Dashboard() {
       setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (err) => handleFirestoreError(err, OperationType.LIST, 'customers'));
 
+    const qAnnouncements = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
+    const unsubAnnouncements = onSnapshot(qAnnouncements, (snapshot) => {
+      setAnnouncements(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => handleFirestoreError(err, OperationType.LIST, 'announcements'));
+
+    const qOlts = query(collection(db, 'olts'), orderBy('name', 'asc'));
+    const unsubOlts = onSnapshot(qOlts, (snapshot) => {
+      setOlts(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => handleFirestoreError(err, OperationType.LIST, 'olts'));
+
     const unsubSettings = onSnapshot(doc(db, 'settings', 'global'), (docSnap) => {
       if (docSnap.exists()) {
         setSettings({ id: docSnap.id, ...docSnap.data() });
@@ -145,6 +161,8 @@ function Dashboard() {
       unsubStock();
       unsubTasks();
       unsubCustomers();
+      unsubAnnouncements();
+      unsubOlts();
       unsubSettings();
       unsubUsers();
     };
@@ -282,6 +300,9 @@ function Dashboard() {
               <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
                 Estoque
               </TabsTrigger>
+              <TabsTrigger value="announcements" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Avisos
+              </TabsTrigger>
               <TabsTrigger value="settings" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
                 Configurações
               </TabsTrigger>
@@ -343,8 +364,12 @@ function Dashboard() {
             <StockManager stock={stock} isAdmin={isAdmin} />
           </TabsContent>
 
+          <TabsContent value="announcements" className="mt-4 sm:mt-0">
+            <AnnouncementsManager announcements={announcements} isAdmin={isAdmin} settings={settings} />
+          </TabsContent>
+
           <TabsContent value="settings" className="mt-4 sm:mt-0">
-            <SettingsManager settings={settings} users={users} customers={customers} isAdmin={isAdmin} />
+            <SettingsManager settings={settings} users={users} customers={customers} olts={olts} isAdmin={isAdmin} />
           </TabsContent>
         </Tabs>
       </main>
@@ -1447,7 +1472,270 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
   );
 }
 
-function SettingsManager({ settings, users, customers, isAdmin }: { settings: any | null, users: any[], customers: any[], isAdmin: boolean }) {
+function AnnouncementsManager({ announcements, isAdmin, settings }: { announcements: any[], isAdmin: boolean, settings: any }) {
+  const [newMsg, setNewMsg] = useState("");
+  const { user } = useAuth();
+  const [isSending, setIsSending] = useState(false);
+
+  const handleSend = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newMsg || isSending) return;
+    setIsSending(true);
+    try {
+      await addDoc(collection(db, 'announcements'), {
+        text: newMsg,
+        createdBy: user?.uid,
+        createdAt: new Date().toISOString()
+      });
+      setNewMsg("");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'announcements');
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  const deleteAnnouncement = async (id: string) => {
+    if (!isAdmin) return;
+    if (confirm("Excluir este aviso?")) {
+      try {
+        await deleteDoc(doc(db, 'announcements', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `announcements/${id}`);
+      }
+    }
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-8">
+      <div className="text-center space-y-2">
+        <h2 className="text-3xl font-bold flex items-center justify-center gap-3">
+          <Megaphone className="w-8 h-8 text-[#00ff88]" /> Mural de Avisos
+        </h2>
+        <p className="text-gray-500">Envie avisos em massa para toda a equipe</p>
+      </div>
+
+      {isAdmin && (
+        <Card className="bg-[#141414] border-white/5 p-6 rounded-2xl">
+          <form onSubmit={handleSend} className="space-y-4">
+            <div className="space-y-2">
+              <Label className="text-gray-400 uppercase text-[10px] font-bold">Mensagem do Aviso</Label>
+              <Textarea 
+                value={newMsg} 
+                onChange={(e) => setNewMsg(e.target.value)}
+                placeholder="Digite aqui o aviso importante..."
+                className="bg-white/5 border-white/10 min-h-[120px] resize-none focus:border-[#00ff88]/50 text-white"
+              />
+            </div>
+            <Button disabled={isSending} type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 hover:bg-[#00cc6e]">
+              {isSending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Send className="w-4 h-4 mr-2" />}
+              Publicar Aviso
+            </Button>
+          </form>
+        </Card>
+      )}
+
+      <div className="space-y-4">
+        {announcements.map(ann => (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            key={ann.id}
+          >
+            <Card className="bg-[#141414] border-white/5 p-6 rounded-xl hover:border-white/10 transition-all group">
+              <div className="flex justify-between items-start gap-4">
+                <div className="flex-1">
+                  <p className="text-white text-lg whitespace-pre-wrap leading-relaxed">{ann.text}</p>
+                  <p className="text-[10px] text-gray-500 mt-4 flex items-center gap-2">
+                    <Clock className="w-3 h-3" />
+                    {new Date(ann.createdAt).toLocaleString()}
+                  </p>
+                </div>
+                {isAdmin && (
+                  <Button variant="ghost" size="icon" onClick={() => deleteAnnouncement(ann.id)} className="text-gray-500 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all">
+                    <Trash className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </Card>
+          </motion.div>
+        ))}
+        {announcements.length === 0 && (
+          <div className="text-center py-20 text-gray-600 border border-dashed border-white/5 rounded-2xl">
+            Nenhum aviso publicado no momento.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function OLTManager({ olts, customers, isAdmin }: { olts: any[], customers: any[], isAdmin: boolean }) {
+  const [isOLTDialogOpen, setIsOLTDialogOpen] = useState(false);
+  const [editingOLT, setEditingOLT] = useState<any>(null);
+  const [newOLTName, setNewOLTName] = useState("");
+  const [newOLTDesc, setNewOLTDesc] = useState("");
+  
+  const [selectedCustomerId, setSelectedCustomerId] = useState("");
+  const [groupCode, setGroupCode] = useState("");
+
+  const handleSaveOLT = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newOLTName) return;
+    try {
+      const data = {
+        name: newOLTName,
+        description: newOLTDesc,
+        customers: editingOLT ? editingOLT.customers : []
+      };
+      if (editingOLT) {
+        await updateDoc(doc(db, 'olts', editingOLT.id), data);
+      } else {
+        await addDoc(collection(db, 'olts'), data);
+      }
+      setNewOLTName("");
+      setNewOLTDesc("");
+      setEditingOLT(null);
+      setIsOLTDialogOpen(false);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.WRITE, 'olts');
+    }
+  };
+
+  const addCustomerToOLT = async (olt: any) => {
+    if (!selectedCustomerId || !isAdmin) return;
+    try {
+      const currentCustomers = olt.customers || [];
+      if (currentCustomers.some((c: any) => c.customerId === selectedCustomerId)) {
+        alert("Cliente já adicionado a esta OLT.");
+        return;
+      }
+      const updatedCustomers = [...currentCustomers, { customerId: selectedCustomerId, groupCode }];
+      await updateDoc(doc(db, 'olts', olt.id), { customers: updatedCustomers });
+      setSelectedCustomerId("");
+      setGroupCode("");
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `olts/${olt.id}`);
+    }
+  };
+
+  const removeCustomerFromOLT = async (olt: any, customerId: string) => {
+    if (!isAdmin) return;
+    try {
+      const updatedCustomers = (olt.customers || []).filter((c: any) => c.customerId !== customerId);
+      await updateDoc(doc(db, 'olts', olt.id), { customers: updatedCustomers });
+    } catch (err) {
+      handleFirestoreError(err, OperationType.UPDATE, `olts/${olt.id}`);
+    }
+  };
+
+  const deleteOLT = async (id: string) => {
+    if (!isAdmin) return;
+    if (confirm("Excluir esta OLT?")) {
+      try {
+        await deleteDoc(doc(db, 'olts', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `olts/${id}`);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h3 className="text-xl font-bold flex items-center gap-2 text-[#00ff88]">
+          <Radio className="w-5 h-5" /> Gerenciamento de OLTs
+        </h3>
+        {isAdmin && (
+          <Dialog open={isOLTDialogOpen} onOpenChange={(v) => { setIsOLTDialogOpen(v); if(!v) {setEditingOLT(null); setNewOLTName(""); setNewOLTDesc("");} }}>
+            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold h-9 px-4 text-xs hover:bg-[#00cc6e]"><Plus className="w-4 h-4 mr-2" /> Nova OLT</Button>} />
+            <DialogContent className="bg-[#141414] border-white/10 text-white p-8">
+              <DialogHeader><DialogTitle className="text-2xl font-bold text-[#00ff88]">{editingOLT ? 'Editar OLT' : 'Nova OLT'}</DialogTitle></DialogHeader>
+              <form onSubmit={handleSaveOLT} className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label>Nome da OLT</Label>
+                  <Input value={newOLTName} onChange={e => setNewOLTName(e.target.value)} className="bg-white/5 border-white/10 h-12" placeholder="Ex: OLT Pacatuba 01" />
+                </div>
+                <div className="space-y-2">
+                  <Label>Descrição / Localização</Label>
+                  <Input value={newOLTDesc} onChange={e => setNewOLTDesc(e.target.value)} className="bg-white/5 border-white/10 h-12" placeholder="Ex: Rack 02 - Sala Técnica" />
+                </div>
+                <Button type="submit" className="w-full bg-[#00ff88] text-black font-bold h-12 mt-4">{editingOLT ? 'Salvar Alterações' : 'Criar OLT'}</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6">
+        {olts.map(olt => (
+          <Card key={olt.id} className="bg-[#141414] border-white/5 p-6 rounded-2xl">
+            <div className="flex justify-between items-start mb-6 border-b border-white/5 pb-4">
+              <div>
+                <h4 className="text-lg font-bold text-white">{olt.name}</h4>
+                <p className="text-sm text-gray-500">{olt.description || 'Sem descrição'}</p>
+              </div>
+              {isAdmin && (
+                <div className="flex gap-2">
+                  <Button variant="ghost" size="icon" onClick={() => { setEditingOLT(olt); setNewOLTName(olt.name); setNewOLTDesc(olt.description || ""); setIsOLTDialogOpen(true); }} className="w-8 h-8 text-gray-500 hover:text-[#00ff88]"><Edit2 className="w-4 h-4" /></Button>
+                  <Button variant="ghost" size="icon" onClick={() => deleteOLT(olt.id)} className="w-8 h-8 text-gray-500 hover:text-red-500"><Trash className="w-4 h-4" /></Button>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div className="flex items-center gap-3 text-xs font-bold text-gray-400 uppercase tracking-widest px-2">
+                <Users className="w-4 h-4" /> Clientes na OLT
+              </div>
+              
+              {isAdmin && (
+                <div className="flex flex-col sm:flex-row gap-3 bg-white/5 p-4 rounded-xl border border-white/5">
+                  <Select value={selectedCustomerId} onValueChange={setSelectedCustomerId}>
+                    <SelectTrigger className="flex-1 bg-black/20 border-white/10 h-10"><SelectValue placeholder="Selecionar Cliente" /></SelectTrigger>
+                    <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                      {customers.map(c => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                  <Input value={groupCode} onChange={e => setGroupCode(e.target.value)} placeholder="Nº ou Código do Grupo" className="w-full sm:w-48 bg-black/20 border-white/10 h-10 text-xs" />
+                  <Button onClick={() => addCustomerToOLT(olt)} className="bg-[#00ff88] text-black font-bold h-10 px-6 sm:w-auto w-full"><Plus className="w-4 h-4 mr-2" /> Add</Button>
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {(olt.customers || []).map((oc: any) => {
+                  const customer = customers.find(c => c.id === oc.customerId);
+                  return (
+                    <div key={oc.customerId} className="flex items-center justify-between p-3 bg-white/5 rounded-lg border border-white/5 group/cust">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-white truncate">{customer?.name || 'Cliente Removido'}</span>
+                        <span className="text-[10px] text-gray-500 bg-black/40 px-1.5 py-0.5 rounded w-fit mt-1">Grupo: {oc.groupCode || '-'}</span>
+                      </div>
+                      {isAdmin && (
+                        <Button variant="ghost" size="icon" onClick={() => removeCustomerFromOLT(olt, oc.customerId)} className="w-6 h-6 text-gray-600 hover:text-red-500 opacity-0 group-hover/cust:opacity-100 transition-all"><Trash className="w-3 h-3" /></Button>
+                      )}
+                    </div>
+                  );
+                })}
+                {(olt.customers || []).length === 0 && (
+                  <div className="col-span-full py-6 text-center text-gray-600 text-[10px] bg-white/5 rounded-lg border border-dashed border-white/10 uppercase tracking-widest">
+                    Nenhum cliente vinculado a esta OLT
+                  </div>
+                )}
+              </div>
+            </div>
+          </Card>
+        ))}
+        {olts.length === 0 && (
+          <div className="text-center py-20 text-gray-600 border border-dashed border-white/5 rounded-2xl">
+            Nenhuma OLT cadastrada.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SettingsManager({ settings, users, customers, olts, isAdmin }: { settings: any | null, users: any[], customers: any[], olts: any[], isAdmin: boolean }) {
   const [formData, setFormData] = useState({
     evolutionWebUrl: "",
     evolutionWebApiKey: "",
@@ -1515,6 +1803,9 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
           )}
           <TabsTrigger value="customers" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
             Clientes
+          </TabsTrigger>
+          <TabsTrigger value="olts" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
+            OLTs
           </TabsTrigger>
           <TabsTrigger value="general" className="data-[state=active]:bg-[#00ff88] data-[state=active]:text-black text-gray-500 rounded-lg transition-all px-8 h-full text-sm font-medium">
             Geral
@@ -1662,6 +1953,10 @@ function SettingsManager({ settings, users, customers, isAdmin }: { settings: an
 
         <TabsContent value="customers">
           <CustomerManager customers={customers} isAdmin={isAdmin} />
+        </TabsContent>
+
+        <TabsContent value="olts">
+          <OLTManager olts={olts} customers={customers} isAdmin={isAdmin} />
         </TabsContent>
 
         <TabsContent value="general">
@@ -2069,10 +2364,19 @@ function DatacenterCard({ dc, isAdmin }: { dc: any, isAdmin: boolean }) {
                 size="sm" 
                 disabled={isCheckingEnel}
                 onClick={checkEnelPayment}
-                className="h-9 text-[10px] bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] shadow-[0_0_10px_rgba(0,255,136,0.1)]"
+                className="h-9 text-[10px] bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] shadow-[0_0_10px_rgba(0,255,136,0.1)] min-w-[100px]"
               >
-                {isCheckingEnel ? <Clock className="w-3 h-3 animate-spin mr-1" /> : <RefreshCw className="w-3 h-3 mr-1" />}
-                Consultar
+                {isCheckingEnel ? (
+                  <>
+                    <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                    Consultando...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-3 h-3 mr-1" />
+                    Consultar
+                  </>
+                )}
               </Button>
             </div>
           </div>

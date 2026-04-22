@@ -149,9 +149,42 @@
         "createdAt": { "type": "string", "format": "date-time" }
       },
       "required": ["text", "authorName", "authorUid", "createdAt"]
+    },
+    "Announcement": {
+      "title": "Announcement",
+      "description": "Mass announcements/broadcasts",
+      "type": "object",
+      "properties": {
+        "text": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["text", "createdBy", "createdAt"]
+    },
+    "OLT": {
+      "title": "OLT",
+      "description": "Optical Line Terminal management",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "description": { "type": "string" },
+        "customers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "customerId": { "type": "string" },
+              "groupCode": { "type": "string" }
+            }
+          }
+        }
+      },
+      "required": ["name"]
     }
   },
   "firestore": {
+    "/announcements/{announcementId}": { "schema": "Announcement", "description": "Announcements collection" },
+    "/olts/{oltId}": { "schema": "OLT", "description": "OLTs collection" },
     "/assets/{assetId}": { "schema": "Asset", "description": "Assets collection" },
     "/tickets/{ticketId}": { "schema": "Ticket", "description": "Tickets collection" },
     "/tickets/{ticketId}/comments/{commentId}": { "schema": "Comment", "description": "Comments sub-collection for tickets" },
