@@ -33,15 +33,22 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    function hasRole() {
-      return isAuthenticated() && 
-        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'user'];
-    }
-    
     function isAdmin() {
-      return isAuthenticated() && 
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "NairtonBraga00@gmail.com" && request.auth.token.email_verified == true));
+      return isAuthenticated() && (
+        (request.auth.token.email.toLowerCase() == "nairtonbraga00@gmail.com") ||
+        (request.auth.uid == "rBKxk1BWAgWEjvfL3fcyuFWBT3s1") ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+      );
+    }
+
+    function hasRole() {
+      return isAuthenticated() && (
+        (request.auth.token.email.toLowerCase() == "nairtonbraga00@gmail.com") ||
+        (request.auth.uid == "rBKxk1BWAgWEjvfL3fcyuFWBT3s1") ||
+        (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+         get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['admin', 'user'])
+      );
     }
 
     function isValidAsset(data) {
@@ -140,6 +147,21 @@ service cloud.firestore {
     match /customers/{customerId} {
       allow read: if hasRole();
       allow write: if isAdmin();
+    }
+
+    match /prefeituras/{pId} {
+      allow read: if hasRole();
+      allow write: if isAdmin();
+
+      match /secretarias/{sId} {
+        allow read: if hasRole();
+        allow write: if isAdmin();
+
+        match /pontos/{ptId} {
+          allow read: if hasRole();
+          allow write: if isAdmin();
+        }
+      }
     }
 
     match /users/{userId} {

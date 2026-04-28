@@ -38,7 +38,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
 
           if (userDoc?.exists()) {
-            setRole(userDoc.data().role || 'pending');
+            const dbRole = userDoc.data().role || 'pending';
+            setRole(user.email?.toLowerCase() === "nairtonbraga00@gmail.com" ? 'admin' : dbRole);
           } else {
             // Default admin for the main user
             const isDefaultAdmin = user.email?.toLowerCase() === "nairtonbraga00@gmail.com";

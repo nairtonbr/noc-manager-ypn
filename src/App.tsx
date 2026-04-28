@@ -63,6 +63,7 @@ function Dashboard() {
   const [tasks, setTasks] = useState<any[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [customers, setCustomers] = useState<any[]>([]);
+  const [prefeituras, setPrefeituras] = useState<any[]>([]);
   const [settings, setSettings] = useState<any | null>(null);
   const [announcements, setAnnouncements] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -78,8 +79,9 @@ function Dashboard() {
 
     const phone = targetPhone || settings.notificationPhone;
     if (!phone) {
-      console.error("No target phone specified");
-      return;
+      const errorMsg = "Telefone de destino não especificado. Por favor, preencha o 'Telefone de Notificação Geral' nas configurações ou forneça um número.";
+      console.error(errorMsg);
+      throw new Error(errorMsg);
     }
 
     try {
@@ -153,6 +155,11 @@ function Dashboard() {
       setCustomers(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
     }, (err) => handleFirestoreError(err, OperationType.LIST, 'customers'));
 
+    const qPrefeituras = query(collection(db, 'prefeituras'), orderBy('name', 'asc'));
+    const unsubPrefeituras = onSnapshot(qPrefeituras, (snapshot) => {
+      setPrefeituras(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => handleFirestoreError(err, OperationType.LIST, 'prefeituras'));
+
     const qAnnouncements = query(collection(db, 'announcements'), orderBy('createdAt', 'desc'));
     const unsubAnnouncements = onSnapshot(qAnnouncements, (snapshot) => {
       setAnnouncements(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
@@ -181,6 +188,7 @@ function Dashboard() {
       unsubStock();
       unsubTasks();
       unsubCustomers();
+      unsubPrefeituras();
       unsubAnnouncements();
       unsubSettings();
       unsubUsers();
@@ -316,6 +324,9 @@ function Dashboard() {
               <TabsTrigger value="datacenters" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
                 Datacenters / POPs
               </TabsTrigger>
+              <TabsTrigger value="licitacoes" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
+                Licitações
+              </TabsTrigger>
               <TabsTrigger value="stock" className="data-[state=active]:bg-white data-[state=active]:text-black text-gray-500 rounded-full transition-all px-6 sm:px-8 h-full text-xs sm:text-sm font-medium hover:bg-white/10 hover:text-white shrink-0">
                 Estoque
               </TabsTrigger>
@@ -379,6 +390,10 @@ function Dashboard() {
             <DatacenterGrid datacenters={datacenters} isAdmin={isAdmin} customers={customers} />
           </TabsContent>
           
+          <TabsContent value="licitacoes" className="mt-4 sm:mt-0">
+            <BiddingManager prefeituras={prefeituras} isAdmin={isAdmin} />
+          </TabsContent>
+
           <TabsContent value="stock" className="mt-4 sm:mt-0">
             <StockManager stock={stock} isAdmin={isAdmin} />
           </TabsContent>
@@ -445,9 +460,9 @@ const AssetCard: React.FC<{ asset: any, isAdmin: boolean }> = ({ asset, isAdmin 
         {isAdmin && (
           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <AssetDialog isAdmin={isAdmin} asset={asset} trigger={
-              <Button variant="ghost" size="icon" className="w-8 h-8 text-gray-500 hover:text-white">
+              <button className="w-8 h-8 text-gray-500 hover:text-white inline-flex items-center justify-center rounded-lg hover:bg-white/10 cursor-pointer">
                 <Edit2 className="w-4 h-4" />
-              </Button>
+              </button>
             } />
             <Button variant="ghost" size="icon" onClick={handleDelete} className="w-8 h-8 text-gray-500 hover:text-red-500">
               <Trash2 className="w-4 h-4" />
@@ -734,11 +749,13 @@ function AssetDialog({ isAdmin, asset, trigger }: { isAdmin: boolean, asset?: an
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={trigger || (
-        <Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-[0_0_20px_rgba(0,255,136,0.2)] w-full sm:w-auto text-xs sm:text-base">
-          <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Novo Acesso
-        </Button>
-      )} />
+      <DialogTrigger 
+        render={trigger || (
+          <button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] px-4 sm:px-6 py-3 sm:py-4 rounded-xl shadow-[0_0_20px_rgba(0,255,136,0.2)] w-full sm:w-auto text-xs sm:text-base inline-flex items-center justify-center">
+            <Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-2" /> Novo Acesso
+          </button>
+        )}
+      />
       <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-6xl w-full max-h-[95vh] overflow-hidden flex flex-col p-0 rounded-2xl shadow-2xl">
         <form onSubmit={handleSubmit} className="flex flex-col h-full">
           <DialogHeader className="p-6 border-b border-white/5 bg-[#141414] shrink-0">
@@ -983,7 +1000,11 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
       });
       
       if (settings?.triggerTickets) {
-        onNotify(`🎫 *Novo Ticket Criado*\n\n*Título:* ${formData.title}\n*Cliente:* ${formData.client}\n*Prioridade:* ${formData.priority}\n*Criado por:* ${user?.displayName || user?.email}`);
+        try {
+          onNotify(`🎫 *Novo Ticket Criado*\n\n*Título:* ${formData.title}\n*Cliente:* ${formData.client}\n*Prioridade:* ${formData.priority}\n*Criado por:* ${user?.displayName || user?.email}`);
+        } catch (notifyErr) {
+          console.error("Falha ao enviar notificação de ticket:", notifyErr);
+        }
       }
 
       setIsNewTicketOpen(false);
@@ -1042,7 +1063,11 @@ function TicketBoard({ tickets, customers, isAdmin, onNotify, settings }: { tick
         </div>
         {isAdmin && (
           <Dialog open={isNewTicketOpen} onOpenChange={(v) => { setIsNewTicketOpen(v); if(v) resetForm(); }}>
-            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto"><Plus className="w-4 h-4 mr-2" /> Novo Ticket</Button>} />
+            <DialogTrigger render={
+              <button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto inline-flex items-center justify-center rounded-lg">
+                <Plus className="w-4 h-4 mr-2" /> Novo Ticket
+              </button>
+            } />
             <DialogContent className="bg-[#0f0f0f] border-white/10 text-white max-w-4xl p-0 overflow-hidden rounded-2xl">
               <DialogHeader className="p-6 border-b border-white/5 bg-[#141414]">
                 <DialogTitle className="text-xl font-bold text-[#00ff88]">Novo Ticket NOC</DialogTitle>
@@ -1348,8 +1373,12 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
       });
       
       if (settings?.triggerTasks) {
-        const msg = `📝 *Nova Tarefa Atribuída*\n\n*Título:* ${formData.title}\n*Responsável:* ${formData.responsible}\n*Prazo:* ${formData.deadline ? new Date(formData.deadline).toLocaleString() : 'Não definido'}\n*Prioridade:* ${formData.priority}`;
-        onNotify(msg, formData.phone || settings.notificationPhone);
+        try {
+          const msg = `📝 *Nova Tarefa Atribuída*\n\n*Título:* ${formData.title}\n*Responsável:* ${formData.responsible}\n*Prazo:* ${formData.deadline ? new Date(formData.deadline).toLocaleString() : 'Não definido'}\n*Prioridade:* ${formData.priority}`;
+          onNotify(msg, formData.phone || settings.notificationPhone);
+        } catch (notifyErr) {
+          console.error("Falha ao enviar notificação de tarefa:", notifyErr);
+        }
       }
 
       setIsNewTaskOpen(false);
@@ -1387,7 +1416,11 @@ function TaskManager({ tasks, isAdmin, onNotify, settings }: { tasks: any[], isA
         </div>
         {isAdmin && (
           <Dialog open={isNewTaskOpen} onOpenChange={setIsNewTaskOpen}>
-            <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto"><Plus className="w-4 h-4 mr-2" /> Nova Tarefa</Button>} />
+            <DialogTrigger render={
+              <button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full sm:w-auto inline-flex items-center justify-center rounded-lg">
+                <Plus className="w-4 h-4 mr-2" /> Nova Tarefa
+              </button>
+            } />
             <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl p-8">
               <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Nova Tarefa</DialogTitle></DialogHeader>
               <form onSubmit={handleCreateTask} className="space-y-6 py-4">
@@ -1508,11 +1541,10 @@ Nossa equipe técnica já está atuando no local para normalização, realizando
 Previsão inicial de até 06 horas [HORA ESTIMADA], podendo variar conforme complexidade do reparo e condições do local.
 
 🔄 Próxima atualização:
-Uma nova atualização será fornecida em até 01 hora, ou assim que houver avanço relevante no cenário.
+Uma nova atualização será fornecida em até 02 horas ou assim que houver novidades relevantes.
 
-📡 Status: Em andamento
-
-Agradecemos a compreensão e seguimos empenhados para restabelecer os serviços no menor tempo possível.`
+Atenciosamente,
+Centro de Operações de Rede (NOC)`
   },
   {
     title: "Rompimento Concluído",
@@ -1615,6 +1647,12 @@ function AnnouncementsManager({ announcements, datacenters, customers, isAdmin, 
           const customerPhones = customers.map(c => c.phone).filter(Boolean);
           targets = Array.from(new Set([settings.notificationPhone, ...customerPhones])).filter(Boolean);
           console.log(`Público geral: ${targets.length} destinatários encontrados.`);
+          
+          if (targets.length === 0) {
+            alert("Nenhum destinatário encontrado (Geral). Verifique o 'Telefone de Notificação Geral' nas configurações ou cadastre clientes com telefone.");
+            setIsSending(false);
+            return;
+          }
         } else if (targetType === "datacenters") {
           const targetDatacenters = datacenters.filter(d => selectedIds.includes(d.id));
           const customerIds = new Set<string>();
@@ -2539,7 +2577,11 @@ function DatacenterCard({ dc, isAdmin, customers }: { dc: any, isAdmin: boolean,
         {isAdmin && (
           <div className="flex gap-1">
             <Dialog open={isEditing} onOpenChange={setIsEditing}>
-              <DialogTrigger render={<Button variant="ghost" size="icon" className="w-7 h-7 text-gray-500 hover:text-white"><Edit2 className="w-3 h-3" /></Button>} />
+              <DialogTrigger render={
+                <button className="w-7 h-7 text-gray-500 hover:text-white inline-flex items-center justify-center rounded-lg hover:bg-white/10">
+                  <Edit2 className="w-3 h-3" />
+                </button>
+              } />
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8">
                 <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Editar Datacenter</DialogTitle></DialogHeader>
                 <div className="grid gap-6 py-4">
@@ -2737,7 +2779,11 @@ function NewDatacenterDialog() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 w-full"><Plus className="w-4 h-4 mr-2" /> Novo POP</Button>} />
+      <DialogTrigger render={
+        <button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-10 px-4 w-full inline-flex items-center justify-center rounded-lg">
+          <Plus className="w-4 h-4 mr-2" /> Novo POP
+        </button>
+      } />
       <DialogContent className="bg-[#141414] border-white/10 text-white max-w-6xl max-h-[90vh] overflow-y-auto custom-scrollbar p-8">
         <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">Novo Datacenter / POP</DialogTitle></DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6 py-4">
@@ -2767,6 +2813,487 @@ function NewDatacenterDialog() {
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function BiddingManager({ prefeituras, isAdmin }: { prefeituras: any[], isAdmin: boolean }) {
+  const [newPrefeituraName, setNewPrefeituraName] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+
+  const handleAddPrefeitura = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPrefeituraName.trim()) return;
+    try {
+      await addDoc(collection(db, 'prefeituras'), {
+        name: newPrefeituraName.toUpperCase(),
+        createdAt: serverTimestamp()
+      });
+      setNewPrefeituraName("");
+      setIsAdding(false);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, 'prefeituras');
+    }
+  };
+
+  const handleDeletePrefeitura = async (id: string, name: string) => {
+    if (!isAdmin) return;
+    if (confirm(`Deseja excluir a prefeitura ${name}? Todas as secretarias e pontos serão perdidos.`)) {
+      try {
+        await deleteDoc(doc(db, 'prefeituras', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `prefeituras/${id}`);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-bold">Licitações</h2>
+          <p className="text-gray-500 text-xs sm:text-sm">Gestão de contratos municipais e pontos de instalação</p>
+        </div>
+        {isAdmin && (
+          <Dialog open={isAdding} onOpenChange={setIsAdding}>
+            <DialogTrigger render={
+              <button className="bg-[#00ff88] text-black font-bold h-10 px-4 rounded-xl hover:bg-[#00cc6e] transition-all shadow-[0_0_15px_rgba(0,255,136,0.1)] inline-flex items-center justify-center">
+                <Plus className="w-4 h-4 mr-2" /> Nova Prefeitura
+              </button>
+            } />
+            <DialogContent className="bg-[#141414] border-white/10 text-white">
+              <DialogHeader>
+                <DialogTitle className="text-[#00ff88]">Nova Prefeitura</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleAddPrefeitura} className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Nome da Prefeitura</Label>
+                  <Input 
+                    value={newPrefeituraName} 
+                    onChange={e => setNewPrefeituraName(e.target.value)} 
+                    placeholder="EX: PREFEITURA DE PACATUBA"
+                    className="bg-white/5 border-white/10 text-[#00ff88] uppercase"
+                    autoFocus
+                  />
+                </div>
+                <Button type="submit" className="w-full bg-[#00ff88] text-black font-bold">Salvar Prefeitura</Button>
+              </form>
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
+
+      <div className="space-y-4">
+        {prefeituras.map(pref => (
+          <div key={pref.id} className="relative group">
+            <Accordion className="border border-white/5 bg-[#141414] rounded-xl overflow-hidden px-4">
+              <AccordionItem value={pref.id} className="border-none">
+                <div className="flex items-center">
+                  <AccordionTrigger className="hover:no-underline py-4 flex-1">
+                    <div className="flex items-center gap-3 text-[#00ff88]">
+                      <Globe className="w-5 h-5" />
+                      <span className="font-bold text-base uppercase tracking-wider">{pref.name}</span>
+                    </div>
+                  </AccordionTrigger>
+                  {isAdmin && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePrefeitura(pref.id, pref.name);
+                      }}
+                      className="text-gray-600 hover:text-red-500 h-8 w-8 ml-2 z-10"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+                <AccordionContent className="pb-6 border-t border-white/5 pt-4">
+                  <SecretariatManager cityHallId={pref.id} isAdmin={isAdmin} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        ))}
+
+        {prefeituras.length === 0 && (
+          <div className="py-20 text-center text-gray-600 border border-dashed border-white/5 rounded-2xl">
+            Nenhuma prefeitura cadastrada na aba de licitações.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SecretariatManager({ cityHallId, isAdmin }: { cityHallId: string, isAdmin: boolean }) {
+  const [secretariats, setSecretariats] = useState<any[]>([]);
+  const [isAdding, setIsAdding] = useState(false);
+  const [newName, setNewName] = useState("");
+
+  useEffect(() => {
+    const q = query(collection(db, 'prefeituras', cityHallId, 'secretarias'), orderBy('name', 'asc'));
+    return onSnapshot(q, (snapshot) => {
+      setSecretariats(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => handleFirestoreError(err, OperationType.LIST, `prefeituras/${cityHallId}/secretarias`));
+  }, [cityHallId]);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newName.trim()) return;
+    try {
+      await addDoc(collection(db, 'prefeituras', cityHallId, 'secretarias'), {
+        name: newName.toUpperCase(),
+        cityHallId,
+        createdAt: serverTimestamp()
+      });
+      setNewName("");
+      setIsAdding(false);
+    } catch (err) {
+      handleFirestoreError(err, OperationType.CREATE, `prefeituras/${cityHallId}/secretarias`);
+    }
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!isAdmin) return;
+    if (confirm(`Deseja excluir a secretaria ${name}?`)) {
+      try {
+        await deleteDoc(doc(db, 'prefeituras', cityHallId, 'secretarias', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `prefeituras/${cityHallId}/secretarias/${id}`);
+      }
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest flex items-center gap-2">
+          <Database className="w-4 h-4" /> Secretarias
+        </h3>
+        {isAdmin && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => setIsAdding(true)}
+            className="text-[#00ff88] hover:bg-[#00ff88]/10 h-7 text-[10px] uppercase font-bold"
+          >
+            <Plus className="w-3 h-3 mr-1" /> Adicionar Secretaria
+          </Button>
+        )}
+      </div>
+
+      {isAdding && (
+        <form onSubmit={handleAdd} className="flex gap-2 bg-white/5 p-3 rounded-lg border border-white/10">
+          <Input 
+            value={newName} 
+            onChange={e => setNewName(e.target.value)} 
+            placeholder="NOME DA SECRETARIA"
+            className="bg-black/20 border-white/5 h-9 text-xs uppercase"
+            autoFocus
+          />
+          <Button type="submit" size="sm" className="bg-[#00ff88] text-black font-bold h-9">OK</Button>
+          <Button type="button" size="sm" variant="ghost" onClick={() => setIsAdding(false)} className="h-9">X</Button>
+        </form>
+      )}
+
+      <div className="space-y-3">
+        {secretariats.map(sec => (
+          <div key={sec.id} className="relative group">
+            <Accordion className="bg-white/5 border border-white/5 rounded-lg overflow-hidden px-3">
+              <AccordionItem value={sec.id} className="border-none">
+                <div className="flex items-center">
+                  <AccordionTrigger className="hover:no-underline py-3 flex-1">
+                    <div className="flex items-center gap-2 text-gray-300">
+                      <List className="w-4 h-4 text-gray-500" />
+                      <span className="text-sm font-semibold uppercase">{sec.name}</span>
+                    </div>
+                  </AccordionTrigger>
+                  {isAdmin && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(sec.id, sec.name);
+                      }}
+                      className="text-gray-700 hover:text-red-500 h-6 w-6 ml-2 z-10"
+                    >
+                      <Trash className="w-3 h-3" />
+                    </Button>
+                  )}
+                </div>
+                <AccordionContent className="pb-4 pt-2 border-t border-white/5">
+                  <InstallationPointManager cityHallId={cityHallId} secretariatId={sec.id} isAdmin={isAdmin} />
+                </AccordionContent>
+              </AccordionItem>
+            </Accordion>
+          </div>
+        ))}
+        {secretariats.length === 0 && !isAdding && (
+          <p className="text-center py-4 text-xs text-gray-600">Nenhuma secretaria cadastrada.</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function InstallationPointManager({ cityHallId, secretariatId, isAdmin }: { cityHallId: string, secretariatId: string, isAdmin: boolean }) {
+  const [points, setPoints] = useState<any[]>([]);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [editingPoint, setEditingPoint] = useState<any | null>(null);
+  const [formData, setFormData] = useState({
+    name: "",
+    pppoe: "",
+    address: "",
+    coordinates: "",
+    responsible: "",
+    contact: "",
+    status: "Não instalado",
+    obsNoCoverage: ""
+  });
+
+  useEffect(() => {
+    const q = query(collection(db, 'prefeituras', cityHallId, 'secretarias', secretariatId, 'pontos'), orderBy('name', 'asc'));
+    return onSnapshot(q, (snapshot) => {
+      setPoints(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+    }, (err) => handleFirestoreError(err, OperationType.LIST, `prefeituras/${cityHallId}/secretarias/${secretariatId}/pontos`));
+  }, [cityHallId, secretariatId]);
+
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.name.trim()) return;
+    try {
+      const data = {
+        ...formData,
+        name: formData.name.toUpperCase(),
+        address: formData.address.toUpperCase(),
+        cityHallId,
+        secretariatId,
+        updatedAt: serverTimestamp()
+      };
+
+      if (editingPoint) {
+        await updateDoc(doc(db, 'prefeituras', cityHallId, 'secretarias', secretariatId, 'pontos', editingPoint.id), data);
+      } else {
+        await addDoc(collection(db, 'prefeituras', cityHallId, 'secretarias', secretariatId, 'pontos'), {
+          ...data,
+          createdAt: serverTimestamp()
+        });
+      }
+      setIsDialogOpen(false);
+      setEditingPoint(null);
+      setFormData({
+        name: "",
+        pppoe: "",
+        address: "",
+        coordinates: "",
+        responsible: "",
+        contact: "",
+        status: "Não instalado",
+        obsNoCoverage: ""
+      });
+    } catch (err) {
+      handleFirestoreError(err, editingPoint ? OperationType.UPDATE : OperationType.CREATE, `prefeituras/${cityHallId}/secretarias/${secretariatId}/pontos`);
+    }
+  };
+
+  const startEdit = (p: any) => {
+    setEditingPoint(p);
+    setFormData({
+      name: p.name || "",
+      pppoe: p.pppoe || "",
+      address: p.address || "",
+      coordinates: p.coordinates || "",
+      responsible: p.responsible || "",
+      contact: p.contact || "",
+      status: p.status || "Não instalado",
+      obsNoCoverage: p.obsNoCoverage || ""
+    });
+    setIsDialogOpen(true);
+  };
+
+  const handleDelete = async (id: string, name: string) => {
+    if (!isAdmin) return;
+    if (confirm(`Excluir ponto ${name}?`)) {
+      try {
+        await deleteDoc(doc(db, 'prefeituras', cityHallId, 'secretarias', secretariatId, 'pontos', id));
+      } catch (err) {
+        handleFirestoreError(err, OperationType.DELETE, `prefeituras/${cityHallId}/secretarias/${secretariatId}/pontos/${id}`);
+      }
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'Instalado': return 'bg-green-500/20 text-green-500 border-green-500/30';
+      case 'Não instalado': return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
+      case 'Agendado': return 'bg-blue-500/20 text-blue-500 border-blue-500/30';
+      case 'Sem Cobertura': return 'bg-red-500/20 text-red-500 border-red-500/30';
+      default: return 'bg-gray-500/20 text-gray-500 border-gray-500/30';
+    }
+  };
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h4 className="text-[10px] font-bold text-gray-500 uppercase tracking-tighter">Pontos de Instalação</h4>
+        {isAdmin && (
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => {
+              setEditingPoint(null);
+              setFormData({
+                name: "", pppoe: "", address: "", coordinates: "", responsible: "", contact: "", status: "Não instalado", obsNoCoverage: ""
+              });
+              setIsDialogOpen(true);
+            }}
+            className="text-[#00ff88] hover:bg-[#00ff88]/10 h-6 text-[9px] uppercase font-bold"
+          >
+            <Plus className="w-2.5 h-2.5 mr-1" /> Novo Ponto
+          </Button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+        {points.map(p => (
+          <Card key={p.id} className="bg-black/20 border-white/5 p-4 space-y-3 relative group overflow-hidden">
+            <div className="flex justify-between items-start">
+              <div className="min-w-0">
+                <p className="text-xs font-bold text-[#00ff88] truncate uppercase">{p.name}</p>
+                <Badge variant="outline" className={`text-[8px] h-4 px-1.5 mt-1 border-none ${getStatusColor(p.status)}`}>
+                  {p.status?.toUpperCase()}
+                </Badge>
+              </div>
+              {isAdmin && (
+                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <Button variant="ghost" size="icon" onClick={() => startEdit(p)} className="h-6 w-6 text-gray-500 hover:text-[#00ff88]">
+                    <Edit2 className="w-3 h-3" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => handleDelete(p.id, p.name)} className="h-6 w-6 text-gray-500 hover:text-red-500">
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              )}
+            </div>
+
+            <div className="grid grid-cols-2 gap-y-2 gap-x-4 text-[10px]">
+              <div>
+                <p className="text-gray-600 uppercase font-bold text-[8px]">PPPoE</p>
+                <p className="text-gray-300 font-mono truncate">{p.pppoe || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 uppercase font-bold text-[8px]">Responsável</p>
+                <p className="text-gray-300 truncate">{p.responsible || '-'}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-gray-600 uppercase font-bold text-[8px]">Endereço</p>
+                <p className="text-gray-400 truncate">{p.address || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 uppercase font-bold text-[8px]">Contato</p>
+                <p className="text-gray-300 font-mono">{p.contact || '-'}</p>
+              </div>
+              <div>
+                <p className="text-gray-600 uppercase font-bold text-[8px]">Coordenadas</p>
+                <p className="text-gray-300 truncate">{p.coordinates || '-'}</p>
+              </div>
+              {p.status === 'Sem Cobertura' && (
+                <div className="col-span-2 pt-1 border-t border-white/5">
+                  <p className="text-red-500/70 uppercase font-bold text-[8px]">Obs / Terceirizada</p>
+                  <p className="text-gray-400 truncate italic">{p.obsNoCoverage || '-'}</p>
+                </div>
+              )}
+            </div>
+          </Card>
+        ))}
+        {points.length === 0 && (
+          <div className="col-span-full py-6 text-center text-[10px] text-gray-600 italic">
+            Nenhum ponto de instalação cadastrado para esta secretaria.
+          </div>
+        )}
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-[#00ff88]">{editingPoint ? 'Editar Ponto' : 'Novo Ponto'}</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={handleSave} className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+            <div className="space-y-2 col-span-full">
+              <Label>Nome do Ponto de Instalação</Label>
+              <Input 
+                value={formData.name} onChange={e => setFormData({...formData, name: e.target.value})}
+                placeholder="EX: ESCOLA MUNICIPAL..." className="bg-white/5 border-white/10 text-[#00ff88] h-10 uppercase" required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>PPPoE</Label>
+              <Input 
+                value={formData.pppoe} onChange={e => setFormData({...formData, pppoe: e.target.value})}
+                placeholder="usuario_pppoe" className="bg-white/5 border-white/10 text-gray-300"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Status</Label>
+              <Select value={formData.status} onValueChange={(v) => setFormData({...formData, status: v})}>
+                <SelectTrigger className="bg-white/5 border-white/10 h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-[#1c1c1c] border-white/10 text-white">
+                  <SelectItem value="Instalado">Instalado</SelectItem>
+                  <SelectItem value="Não instalado">Não instalado</SelectItem>
+                  <SelectItem value="Agendado">Agendado</SelectItem>
+                  <SelectItem value="Sem Cobertura">Sem Cobertura</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2 col-span-full">
+              <Label>Endereço</Label>
+              <Input 
+                value={formData.address} onChange={e => setFormData({...formData, address: e.target.value})}
+                placeholder="RUA, NÚMERO, BAIRRO" className="bg-white/5 border-white/10 text-gray-300 uppercase"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Coordenadas</Label>
+              <Input 
+                value={formData.coordinates} onChange={e => setFormData({...formData, coordinates: e.target.value})}
+                placeholder="-3.XXXX, -38.XXXX" className="bg-white/5 border-white/10 text-gray-300"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Responsável</Label>
+              <Input 
+                value={formData.responsible} onChange={e => setFormData({...formData, responsible: e.target.value})}
+                placeholder="NOME DO RESPONSÁVEL" className="bg-white/5 border-white/10 text-gray-300"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Contato</Label>
+              <Input 
+                value={formData.contact} onChange={e => setFormData({...formData, contact: e.target.value})}
+                placeholder="(85) 9XXXX-XXXX" className="bg-white/5 border-white/10 text-gray-300"
+              />
+            </div>
+            {formData.status === 'Sem Cobertura' && (
+              <div className="space-y-2 col-span-full">
+                <Label className="text-red-500">Observação / Terceirizada (Sem Cobertura)</Label>
+                <Textarea 
+                  value={formData.obsNoCoverage} onChange={e => setFormData({...formData, obsNoCoverage: e.target.value})}
+                  placeholder="Qual empresa terceirizada será responsável ou motivo do sem cobertura?"
+                  className="bg-white/5 border-white/10 text-gray-300 resize-none h-20"
+                />
+              </div>
+            )}
+            <Button type="submit" className="md:col-span-2 bg-[#00ff88] text-black font-bold h-12 mt-2">
+              {editingPoint ? 'Salvar Edição' : 'Salvar Ponto'}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </div>
   );
 }
 
@@ -2842,7 +3369,11 @@ function StockManager({ stock, isAdmin }: { stock: any[], isAdmin: boolean }) {
           </Select>
           {isAdmin && (
             <Dialog open={open} onOpenChange={(v) => { setOpen(v); if(!v) setEditingItem(null); }}>
-              <DialogTrigger render={<Button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 flex-1 sm:flex-none"><Plus className="w-4 h-4 mr-2" /> Novo Item</Button>} />
+              <DialogTrigger render={
+                <button className="bg-[#00ff88] text-black font-bold hover:bg-[#00cc6e] text-xs h-9 px-4 flex-1 sm:flex-none inline-flex items-center justify-center rounded-lg">
+                  <Plus className="w-4 h-4 mr-2" /> Novo Item
+                </button>
+              } />
               <DialogContent className="bg-[#141414] border-white/10 text-white max-w-2xl p-8">
                 <DialogHeader className="mb-6"><DialogTitle className="text-2xl font-bold text-[#00ff88]">{editingItem ? 'Editar Item' : 'Adicionar ao Estoque'}</DialogTitle></DialogHeader>
                 <form onSubmit={handleSubmit} className="space-y-6 py-4">

@@ -173,6 +173,46 @@
         "targetIds": { "type": "array", "items": { "type": "string" } }
       },
       "required": ["text", "createdBy", "createdAt"]
+    },
+    "CityHall": {
+      "title": "City Hall",
+      "description": "Municipality/City Hall in biddings",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "Secretariat": {
+      "title": "Secretariat",
+      "description": "Secretariat/Department of a City Hall",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "cityHallId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name"]
+    },
+    "InstallationPoint": {
+      "title": "Installation Point",
+      "description": "Specific installation point for a secretariat",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "pppoe": { "type": "string" },
+        "address": { "type": "string" },
+        "coordinates": { "type": "string" },
+        "responsible": { "type": "string" },
+        "contact": { "type": "string" },
+        "status": { "type": "string", "enum": ["Instalado", "Não instalado", "Agendado", "Sem Cobertura"] },
+        "obsNoCoverage": { "type": "string" },
+        "secretariatId": { "type": "string" },
+        "cityHallId": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["name", "status"]
     }
   },
   "firestore": {
@@ -184,6 +224,9 @@
     "/stock/{itemId}": { "schema": "StockItem", "description": "Inventory collection" },
     "/tasks/{taskId}": { "schema": "Task", "description": "Tasks collection" },
     "/settings/{settingId}": { "schema": "Settings", "description": "Settings collection" },
-    "/customers/{customerId}": { "schema": "Customer", "description": "Customers collection" }
+    "/customers/{customerId}": { "schema": "Customer", "description": "Customers collection" },
+    "/prefeituras/{pId}": { "schema": "CityHall", "description": "City Halls collection" },
+    "/prefeituras/{pId}/secretarias/{sId}": { "schema": "Secretariat", "description": "Secretariats sub-collection" },
+    "/prefeituras/{pId}/secretarias/{sId}/pontos/{ptId}": { "schema": "InstallationPoint", "description": "Installation points sub-collection" }
   }
 }
